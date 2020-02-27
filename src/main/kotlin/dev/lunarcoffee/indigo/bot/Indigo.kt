@@ -1,19 +1,11 @@
 package dev.lunarcoffee.indigo.bot
 
-import dev.lunarcoffee.indigo.framework.api.GuildCommandDSL
+import dev.lunarcoffee.indigo.framework.core.bot.GuildCommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandExecutor
-import dev.lunarcoffee.indigo.framework.core.commands.argparsers.QuotedArgumentParser
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrInt
+import net.dv8tion.jda.api.JDABuilder
 
+// FIXME: URGENT: regenerate token
 fun main() {
-    GuildCommandDSL().apply {
-        execute(TrInt(), TrInt()) {
-            val (a, b) = args
-            sendMessage("$a + $b = ${a + b}").queue()
-        }
-    }
-
-    val text = """a a sd"pok sdfoji'f' ejwie" a " a bc de" fg "abcef" "abc def"bc 'betsys "lol" cake' 'test""""
-    val p = QuotedArgumentParser(text).split()
-    println(p.joinToString("\n"))
+    val jda = JDABuilder("NTY0MjM4MTMzMTUyMDU1MzE3.XlfQNQ.OFpPFXz69Qhw3c8XBamvMrfzcek")
+    GuildCommandBot(jda, GuildCommandExecutor { ".." }).start()
 }

@@ -15,6 +15,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.3")
+
+    implementation("org.reflections:reflections:0.9.10")
 }
 
 tasks {

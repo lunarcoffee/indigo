@@ -5,5 +5,6 @@ interface Command {
     val aliases: List<String>
     val description: String?
 
+    val args: CommandArguments
     val execute: CommandBody<out CommandArguments>
 }
