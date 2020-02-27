@@ -19,7 +19,7 @@ class GuildCommandExecutor(private val prefix: (String) -> String) : CommandExec
     }
 
     override fun execute(command: Command, event: GuildMessageReceivedEvent) {
-        val args = QuotedArgumentParser(event.message.contentRaw).split().drop(1)
+        val args = QuotedArgumentParser(event.message.contentRaw + " ").split().drop(1)
         println(args)
     }
 }
