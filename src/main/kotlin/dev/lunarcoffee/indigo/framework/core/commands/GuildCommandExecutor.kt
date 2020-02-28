@@ -9,27 +9,31 @@ import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-// [prefix] takes a guild ID and returns the prefix for that guild.
-class GuildCommandExecutor(private val prefix: (String) -> String) : CommandExecutor, ListenerAdapter() {
+// [prefix] takes a guild ID and returns the valid prefixes for that guild.
+class GuildCommandExecutor(private val prefix: (String) -> List<String>) : CommandExecutor, ListenerAdapter() {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     override lateinit var bot: CommandBot
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         val content = event.message.contentRaw
-        val prefix = prefix(event.guild.id)
+        val prefixes = prefix(event.guild.id)
+        val invokedPrefix = prefixes.find { content.startsWith(it) } ?: return
 
-        if (event.author.isBot || event.isWebhookMessage || !content.startsWith(prefix))
+        if (event.author.isBot || event.isWebhookMessage)
             return
 
-        val commandName = content.substringBefore(' ').substringAfter(prefix)
+        val commandName = content.substringBefore(' ').substringAfter(invokedPrefix)
         val command = bot.commandsByName[commandName] ?: return
+        val context = GuildCommandContext(bot, invokedPrefix, event)
 
-        coroutineScope.launch { execute(command, event) }
+        coroutineScope.launch { execute(command, context) }
     }
 
-    override suspend fun execute(command: Command, event: GuildMessageReceivedEvent) {
-        val stringArgs = QuotedArgumentParser(event.message.contentRaw).split().drop(1).toMutableList()
+    override suspend fun execute(command: Command, context: CommandContext) {
+        context as GuildCommandContext
+
+        val stringArgs = QuotedArgumentParser(context.event.message.contentRaw).split().toMutableList()
         val args = command.args.asList().map { (it as Transformer<*>).transform(stringArgs) }
 
         if (null in args || stringArgs.isNotEmpty())
@@ -45,7 +49,6 @@ class GuildCommandExecutor(private val prefix: (String) -> String) : CommandExec
             else -> TODO()
         }
 
-        val context = GuildCommandContext(bot, event)
         command.execute(context, commandArgs)
     }
 }

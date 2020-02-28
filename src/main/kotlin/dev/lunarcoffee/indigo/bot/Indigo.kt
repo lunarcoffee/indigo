@@ -7,5 +7,5 @@ import net.dv8tion.jda.api.JDABuilder
 // FIXME: URGENT: regenerate token
 fun main() {
     val jda = JDABuilder("NTY0MjM4MTMzMTUyMDU1MzE3.XlfQNQ.OFpPFXz69Qhw3c8XBamvMrfzcek")
-    GuildCommandBot(jda, GuildCommandExecutor { ".." }).start()
+    GuildCommandBot(jda, GuildCommandExecutor { listOf("..") }).start()
 }

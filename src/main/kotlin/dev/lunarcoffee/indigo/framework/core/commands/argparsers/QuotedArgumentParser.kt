@@ -9,7 +9,7 @@ class QuotedArgumentParser(private val raw: String) : CommandArgumentParser {
 
         while (true) {
             when (curChar) {
-                '\u0000' -> return args
+                '\u0000' -> return args.drop(1)
                 ' ' -> advance()
                 '"', '\'' -> {
                     val char = curChar

@@ -15,8 +15,8 @@ class GuildCommandBot(
     override lateinit var jda: JDA
 
     override val commandGroups = CommandGroupLoader().load()
-    override val commandsByName = commandGroups.values.flatten().associateBy { it.name }
-    override val commands = commandsByName.values.toList()
+    override val commands = commandGroups.values.flatten()
+    override val commandsByName = commands.flatMap { c -> c.names.map { it to c } }.toMap()
 
     override val listeners = EventListenerLoader().load() + commandExecutor as EventListener
 

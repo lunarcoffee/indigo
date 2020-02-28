@@ -1,6 +1,6 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package dev.lunarcoffee.indigo.framework.api.builders
+package dev.lunarcoffee.indigo.framework.api.dsl
 
 import dev.lunarcoffee.indigo.framework.core.commands.*
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.Transformer
