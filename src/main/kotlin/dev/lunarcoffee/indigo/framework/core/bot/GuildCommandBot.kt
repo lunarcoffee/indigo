@@ -18,7 +18,6 @@ class GuildCommandBot(
     override val commandsByName = commandGroups.values.flatten().associateBy { it.name }
     override val commands = commandsByName.values.toList()
 
-    // TODO: filter non-event listeners with annotation
     override val listeners = EventListenerLoader().load() + commandExecutor as EventListener
 
     override fun start() {

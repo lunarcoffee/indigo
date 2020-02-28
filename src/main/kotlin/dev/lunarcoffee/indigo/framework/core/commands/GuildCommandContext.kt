@@ -1,12 +1,13 @@
 package dev.lunarcoffee.indigo.framework.core.commands
 
+import dev.lunarcoffee.indigo.framework.core.bot.Bot
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
-class GuildCommandContext<T : CommandArguments>(
-    override val args: T,
-    private val event: GuildMessageReceivedEvent
-) : CommandContext<T>, TextChannel by event.channel {
+class GuildCommandContext(
+    override val bot: Bot,
+    event: GuildMessageReceivedEvent
+) : CommandContext, TextChannel by event.channel {
 
-    override val jda = event.jda
+    override val jda = bot.jda
 }

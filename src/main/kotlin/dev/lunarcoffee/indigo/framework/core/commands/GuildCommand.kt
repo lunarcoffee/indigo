@@ -5,5 +5,5 @@ class GuildCommand(
     override val aliases: List<String>,
     override val description: String?,
     override val args: CommandArguments,
-    override val execute: suspend CommandContext<out CommandArguments>.() -> Unit
+    override val execute: suspend CommandContext.(CommandArguments) -> Unit
 ) : Command

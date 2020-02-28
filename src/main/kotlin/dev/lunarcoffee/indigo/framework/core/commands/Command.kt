@@ -6,5 +6,5 @@ interface Command {
     val description: String?
 
     val args: CommandArguments
-    val execute: CommandBody<out CommandArguments>
+    val execute: CommandBody<CommandArguments>
 }
