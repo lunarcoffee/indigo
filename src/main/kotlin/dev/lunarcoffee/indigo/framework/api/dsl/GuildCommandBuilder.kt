@@ -15,7 +15,7 @@ class GuildCommandDSL(override val name: String, override val aliases: List<Stri
         private set
 
     fun execute(body: CommandBody<Arg0>) {
-        args = Arg0()
+        args = Arg0
         execute = body as CommandBody<CommandArguments>
     }
 
@@ -54,6 +54,11 @@ class GuildCommandDSL(override val name: String, override val aliases: List<Stri
         body: CommandBody<Arg5<A, B, C, D, E>>
     ) {
         args = Arg5(a, b, c, d, e)
+        execute = body as CommandBody<CommandArguments>
+    }
+
+    fun executeUncheckedArgs(vararg arg: Transformer<*>, body: CommandBody<ArgUnchecked>) {
+        args = ArgUnchecked(arg.toList())
         execute = body as CommandBody<CommandArguments>
     }
 }

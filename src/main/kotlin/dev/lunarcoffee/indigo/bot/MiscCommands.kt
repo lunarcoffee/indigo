@@ -1,6 +1,6 @@
 package dev.lunarcoffee.indigo.bot
 
-import dev.lunarcoffee.indigo.framework.api.builders.command
+import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrInt

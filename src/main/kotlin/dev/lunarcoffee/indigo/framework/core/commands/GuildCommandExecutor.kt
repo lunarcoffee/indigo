@@ -40,13 +40,14 @@ class GuildCommandExecutor(private val prefix: (String) -> List<String>) : Comma
             return
 
         val commandArgs = when (args.size) {
-            0 -> Arg0()
+            0 -> Arg0
             1 -> Arg1(args[0])
             2 -> Arg2(args[0], args[1])
             3 -> Arg3(args[0], args[1], args[2])
             4 -> Arg4(args[0], args[1], args[2], args[3])
             5 -> Arg5(args[0], args[1], args[2], args[3], args[4])
-            else -> TODO()
+            6 -> Arg6(args[0], args[1], args[2], args[3], args[4], args[5])
+            else -> ArgUnchecked(args)
         }
 
         command.execute(context, commandArgs)

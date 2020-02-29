@@ -7,7 +7,6 @@ class EventListenerLoader : BotComponentLoader<List<EventListener>>() {
     override fun load(): List<EventListener> {
         return reflections
             .getTypesAnnotatedWith(ListenerGroup::class.java)
-            .filter { EventListener::class.java in it.interfaces } // TODO:
-            .mapNotNull { it.constructors.getOrNull(0)?.newInstance() as EventListener }
+            .mapNotNull { it.constructors.getOrNull(0)?.newInstance() as? EventListener }
     }
 }

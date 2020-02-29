@@ -6,7 +6,7 @@ interface CommandArguments {
     fun asList(): List<*>
 }
 
-class Arg0 : CommandArguments {
+object Arg0 : CommandArguments {
     override val size = 0
 
     override fun asList() = emptyList<Any>()
@@ -40,4 +40,16 @@ data class Arg5<A, B, C, D, E>(val a: A, val b: B, val c: C, val d: D, val e: E)
     override val size = 5
 
     override fun asList() = listOf(a, b, c, d, e)
+}
+
+data class Arg6<A, B, C, D, E, F>(val a: A, val b: B, val c: C, val d: D, val e: E, val f: F) : CommandArguments {
+    override val size = 6
+
+    override fun asList() = listOf(a, b, c, d, e, f)
+}
+
+data class ArgUnchecked(val args: List<*>) : CommandArguments {
+    override val size = args.size
+
+    override fun asList() = args
 }

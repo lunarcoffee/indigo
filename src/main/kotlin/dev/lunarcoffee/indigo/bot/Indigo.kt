@@ -1,11 +1,12 @@
 package dev.lunarcoffee.indigo.bot
 
-import dev.lunarcoffee.indigo.framework.core.bot.GuildCommandBot
-import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandExecutor
-import net.dv8tion.jda.api.JDABuilder
+import dev.lunarcoffee.indigo.framework.api.dsl.bot
+import java.io.File
 
 // FIXME: URGENT: regenerate token
 fun main() {
-    val jda = JDABuilder("NTY0MjM4MTMzMTUyMDU1MzE3.XlfQNQ.OFpPFXz69Qhw3c8XBamvMrfzcek")
-    GuildCommandBot(jda, GuildCommandExecutor { listOf("..") }).start()
+    bot(true) {
+        token = File("src/main/resources/token.txt").readText()
+        prefix = { listOf("..") }
+    }
 }
