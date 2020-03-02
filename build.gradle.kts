@@ -17,6 +17,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.3")
 
     implementation("org.reflections:reflections:0.9.10")
+
+    implementation("org.yaml:snakeyaml:1.26")
 }
 
 tasks {

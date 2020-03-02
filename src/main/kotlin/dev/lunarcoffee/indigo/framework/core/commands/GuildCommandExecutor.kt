@@ -27,18 +27,22 @@ class GuildCommandExecutor(private val prefix: (String) -> List<String>) : Comma
         val command = bot.commandsByName[commandName] ?: return
         val context = GuildCommandContext(bot, invokedPrefix, event)
 
-        coroutineScope.launch { execute(command, context) }
+        coroutineScope.launch { execute(command, context) } // TODO: catch exceptions
     }
 
     override suspend fun execute(command: Command, context: CommandContext) {
         context as GuildCommandContext
 
         val stringArgs = QuotedArgumentParser(context.event.message.contentRaw).split().toMutableList()
-        val args = command.args.asList().map { (it as Transformer<*>).transform(stringArgs) }
+        val argsOptional = command
+            .args
+            .asList()
+            .map { (it as Transformer<*>).transform(stringArgs) ?: if (it.isOptional) Unit else null }
 
-        if (null in args || stringArgs.isNotEmpty())
+        if (null in argsOptional || stringArgs.isNotEmpty())
             return
 
+        val args = argsOptional.map { if (it == Unit) null else it }
         val commandArgs = when (args.size) {
             0 -> Arg0
             1 -> Arg1(args[0])
