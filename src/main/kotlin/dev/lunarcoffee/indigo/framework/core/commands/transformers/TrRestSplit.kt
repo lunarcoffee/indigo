@@ -2,9 +2,10 @@ package dev.lunarcoffee.indigo.framework.core.commands.transformers
 
 import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 
-object TrInt : Transformer<Int> {
+class TrRestSplit(private val delimiter: String) : Transformer<List<String>> {
     override fun transform(ctx: CommandContext, args: MutableList<String>) = args
-        .firstOrNull()
-        ?.toIntOrNull()
-        ?.also { args.removeAt(0) }
+        .joinToString(" ")
+        .split(delimiter)
+        .also { args.clear() }
+        .ifEmpty { null }
 }

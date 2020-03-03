@@ -37,7 +37,7 @@ class GuildCommandExecutor(private val prefix: (String) -> List<String>) : Comma
         val argsOptional = command
             .args
             .asList()
-            .map { (it as Transformer<*>).transform(stringArgs) ?: if (it.isOptional) Unit else null }
+            .map { (it as Transformer<*>).transform(context, stringArgs) ?: if (it.isOptional) Unit else null }
 
         if (null in argsOptional || stringArgs.isNotEmpty())
             return

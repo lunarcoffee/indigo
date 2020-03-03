@@ -2,9 +2,9 @@ package dev.lunarcoffee.indigo.framework.core.commands.transformers
 
 import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 
-object TrInt : Transformer<Int> {
+object TrDouble : Transformer<Double> {
     override fun transform(ctx: CommandContext, args: MutableList<String>) = args
         .firstOrNull()
-        ?.toIntOrNull()
-        ?.also { args.removeAt(0) }
+        ?.toDoubleOrNull()
+        ?.also { args.removeAt(1) }
 }
