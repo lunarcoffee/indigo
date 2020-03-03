@@ -3,4 +3,4 @@
 /build
 /gradle
 *.iml
-/src/main/resources
+/src/main/resources/config.yaml

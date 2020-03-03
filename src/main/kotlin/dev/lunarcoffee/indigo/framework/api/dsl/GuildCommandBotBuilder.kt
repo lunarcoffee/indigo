@@ -4,19 +4,22 @@ import dev.lunarcoffee.indigo.framework.core.bot.GuildCommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandExecutor
 import net.dv8tion.jda.api.JDABuilder
 
-class GuildCommandBotDsl {
-    lateinit var token: String
-    lateinit var prefix: (String) -> List<String>
+class GuildCommandBotDsl(private val configPath: String) {
+    private lateinit var prefix: (String) -> List<String>
 
-    fun build(start: Boolean): GuildCommandBot {
-        val jda = JDABuilder(token)
+    fun singlePrefix(prefix: String) = customPrefix { listOf(prefix) }
+    fun multiplePrefixes(vararg prefixes: String) = customPrefix { prefixes.toList() }
+
+    fun customPrefix(prefixSelector: (String) -> List<String>) {
+        prefix = prefixSelector
+    }
+
+    fun build(): GuildCommandBot {
+        val jda = JDABuilder()
         val executor = GuildCommandExecutor(prefix)
 
-        return GuildCommandBot(jda, executor).apply {
-            if (start)
-                start()
-        }
+        return GuildCommandBot(jda, executor, configPath)
     }
 }
 
-fun bot(start: Boolean, init: GuildCommandBotDsl.() -> Unit) = GuildCommandBotDsl().apply(init).build(start)
+fun bot(configPath: String, init: GuildCommandBotDsl.() -> Unit) = GuildCommandBotDsl(configPath).apply(init).build()
