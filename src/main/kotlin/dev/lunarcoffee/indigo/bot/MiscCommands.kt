@@ -5,7 +5,8 @@ import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrInt
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRestJoined
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrUser
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrTime
+import java.time.ZoneId
 
 @CommandGroup("Misc")
 class MiscCommands {
@@ -20,6 +21,8 @@ class MiscCommands {
     }
 
     fun check() = command("check", "checkuser") {
-        execute(TrUser) { (user) -> send("user with name: ${user.name}") }
+        execute(TrTime) { (time) ->
+            send("${time.totalSeconds}s, ${time.asTimeFromNow(ZoneId.systemDefault())}")
+        }
     }
 }
