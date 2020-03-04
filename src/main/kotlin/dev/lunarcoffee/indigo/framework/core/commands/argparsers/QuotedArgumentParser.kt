@@ -12,9 +12,9 @@ class QuotedArgumentParser(private val raw: String) : CommandArgumentParser {
                 '\u0000' -> return args.drop(1)
                 ' ' -> advance()
                 '"', '\'' -> {
-                    val char = curChar
+                    val quoteChar = curChar
                     advance()
-                    args += readWhile { it != char && it != '\u0000' }
+                    args += readWhile { it != quoteChar && it != '\u0000' }
                 }
                 else -> args += readWhile { it != ' ' && it != '\u0000' }
             }
