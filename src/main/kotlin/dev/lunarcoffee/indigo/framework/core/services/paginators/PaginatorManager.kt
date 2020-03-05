@@ -33,6 +33,9 @@ object PaginatorManager {
 
     fun isActivePaginator(messageId: Long) = active[messageId] != null
 
+    fun isPaginatorOwner(userId: String, messageId: Long) =
+        isActivePaginator(messageId) && active[messageId]?.first?.ownerId == userId
+
     private fun scheduleCloseTask(messageId: Long): TimerTask {
         return closeTimer.schedule(CLOSE_TIMEOUT) {
             if (isActivePaginator(messageId))

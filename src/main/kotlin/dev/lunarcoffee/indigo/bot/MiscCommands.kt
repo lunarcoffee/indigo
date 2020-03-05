@@ -1,12 +1,12 @@
 package dev.lunarcoffee.indigo.bot
 
 import dev.lunarcoffee.indigo.framework.api.dsl.command
+import dev.lunarcoffee.indigo.framework.api.dsl.paginator
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrInt
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRestJoined
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrTime
-import java.time.ZoneId
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrUser
 
 @CommandGroup("Misc")
 class MiscCommands {
@@ -21,8 +21,23 @@ class MiscCommands {
     }
 
     fun check() = command("check", "checkuser") {
-        execute(TrTime) { (time) ->
-            send("${time.totalSeconds}s, ${time.asTimeFromNow(ZoneId.systemDefault())}")
+        execute(TrUser) { (user) ->
+            send(
+                paginator {
+                    embedPage {
+                        title = "user check:"
+                        description = "name is ${user.name}"
+                        color = 0xFFFF00
+                    }
+                    repeat(100) {
+                        embedPage {
+                            title = "user check:"
+                            description = "page #${it + 2}"
+                        }
+                        textPage("helo")
+                    }
+                }
+            )
         }
     }
 }

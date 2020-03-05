@@ -17,7 +17,3 @@ suspend fun Message.react(unicode: String) {
 suspend fun Message.react(emote: Emote) {
     addReaction(emote).await()
 }
-
-suspend fun Message.clearReact() {
-    clearReactions().await()
-}
