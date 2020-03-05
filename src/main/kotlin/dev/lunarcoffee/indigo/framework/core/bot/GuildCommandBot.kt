@@ -4,6 +4,7 @@ import dev.lunarcoffee.indigo.framework.core.bot.config.DefaultBotConfig
 import dev.lunarcoffee.indigo.framework.core.bot.loaders.CommandGroupLoader
 import dev.lunarcoffee.indigo.framework.core.bot.loaders.EventListenerLoader
 import dev.lunarcoffee.indigo.framework.core.commands.CommandExecutor
+import dev.lunarcoffee.indigo.framework.core.services.paginators.PaginatorReactionListener
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.hooks.EventListener
@@ -29,7 +30,7 @@ class GuildCommandBot(
         commandExecutor.bot = this
         jda = jdaBuilder
             .setToken(config["token"])
-            .addEventListeners(*listeners.toTypedArray())
+            .addEventListeners(*listeners.toTypedArray(), PaginatorReactionListener)
             .build()
     }
 }
