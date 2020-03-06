@@ -1,8 +1,6 @@
 package dev.lunarcoffee.indigo.framework.core.services.paginators
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.schedule
@@ -31,15 +29,12 @@ object PaginatorManager {
         active[messageId] = Pair(paginator, scheduleCloseTask(messageId))
     }
 
-    fun isActivePaginator(messageId: Long) = active[messageId] != null
-
     fun isPaginatorOwner(userId: String, messageId: Long) =
-        isActivePaginator(messageId) && active[messageId]?.first?.ownerId == userId
+        active[messageId] != null && active[messageId]?.first?.ownerId == userId
 
-    private fun scheduleCloseTask(messageId: Long): TimerTask {
-        return closeTimer.schedule(CLOSE_TIMEOUT) {
-            if (isActivePaginator(messageId))
+    private fun scheduleCloseTask(messageId: Long) = closeTimer
+        .schedule(CLOSE_TIMEOUT) {
+            if (active[messageId] != null)
                 coroutineScope.launch { active[messageId]?.first?.stop() }
         }
-    }
 }
