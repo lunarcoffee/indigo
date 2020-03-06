@@ -19,6 +19,7 @@ dependencies {
     implementation("org.reflections:reflections:0.9.10")
 
     implementation("org.yaml:snakeyaml:1.26")
+    implementation("com.google.code.gson:gson:2.8.6")
 }
 
 tasks {

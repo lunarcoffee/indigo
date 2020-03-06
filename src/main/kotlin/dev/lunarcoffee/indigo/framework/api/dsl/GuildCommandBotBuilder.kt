@@ -2,6 +2,7 @@ package dev.lunarcoffee.indigo.framework.api.dsl
 
 import dev.lunarcoffee.indigo.framework.core.bot.GuildCommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandExecutor
+import dev.lunarcoffee.indigo.framework.core.services.reloaders.ReloadableManager
 import net.dv8tion.jda.api.JDABuilder
 
 class GuildCommandBotDsl(private val configPath: String) {
@@ -17,8 +18,9 @@ class GuildCommandBotDsl(private val configPath: String) {
     fun build(): GuildCommandBot {
         val jda = JDABuilder()
         val executor = GuildCommandExecutor(prefix)
+        val reloadableManager = ReloadableManager()
 
-        return GuildCommandBot(jda, executor, configPath)
+        return GuildCommandBot(jda, reloadableManager, executor, configPath)
     }
 }
 
