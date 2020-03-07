@@ -26,8 +26,5 @@ class TransformedTime(val days: Int, val hours: Int, val minutes: Int, val secon
     }
 
     // Pluralize based on value.
-    private fun Int.ifOne(string: String) = if (this >= 1)
-        "$this ${if (this != 1) string else "${string}s"}"
-    else
-        null
+    private fun Int.ifOne(string: String) = "$this ${if (this != 1) string else "${string}s"}".takeIf { this >= 1 }
 }

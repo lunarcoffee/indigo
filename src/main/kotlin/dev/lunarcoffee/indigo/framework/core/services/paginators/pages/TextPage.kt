@@ -6,6 +6,6 @@ class TextPage(private val text: String) : Page {
     override val suppressEmbeds = true
 
     override fun asMessage(page: Int, totalPages: Int) = MessageBuilder()
-        .setContent("[$page/$totalPages]\n$text")
+        .setContent(if (totalPages == 1) text else "[$page/$totalPages]\n$text")
         .build()
 }

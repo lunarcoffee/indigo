@@ -3,7 +3,7 @@ package dev.lunarcoffee.indigo.framework.core.bot.loaders
 import dev.lunarcoffee.indigo.framework.core.commands.Command
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 
-class CommandGroupLoader : BotComponentLoader<Map<String, List<Command>>>() {
+class CommandGroupLoader(sourceRoot: String) : BotComponentLoader<Map<String, List<Command>>>(sourceRoot) {
     override fun load() = reflections
         .getTypesAnnotatedWith(CommandGroup::class.java)
         .map {

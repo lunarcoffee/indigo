@@ -23,11 +23,15 @@ class MessageEmbedBuilderDsl {
     var footer: String? = null
         set(value) = embed.setFooter(value).discard()
 
+    fun field(name: String, value: String) = embed.addField(name, value, false).discard()
+    fun inlineField(name: String, value: String) = embed.addField(name, value, true).discard()
+
     fun author(name: String, url: String? = null, iconUrl: String? = null) =
         embed.setAuthor(name, url, iconUrl).discard()
 
     fun build() = embed.build()
 
+    @Suppress("unused")
     private fun Any.discard() = Unit
 }
 

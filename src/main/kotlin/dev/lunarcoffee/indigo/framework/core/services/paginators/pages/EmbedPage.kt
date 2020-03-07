@@ -7,7 +7,7 @@ class EmbedPage(private val embed: MessageEmbed) : Page {
     override val suppressEmbeds = false
 
     override fun asMessage(page: Int, totalPages: Int) = MessageBuilder()
-        .setContent("[$page/$totalPages]")
+        .setContent(if (totalPages == 1) "" else "[$page/$totalPages]")
         .setEmbed(embed)
         .build()
 }

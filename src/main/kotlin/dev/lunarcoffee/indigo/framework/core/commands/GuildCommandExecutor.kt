@@ -3,9 +3,7 @@ package dev.lunarcoffee.indigo.framework.core.commands
 import dev.lunarcoffee.indigo.framework.core.bot.CommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.argparsers.QuotedArgumentParser
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.Transformer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
@@ -27,7 +25,14 @@ class GuildCommandExecutor(private val prefix: (String) -> List<String>) : Comma
         val command = bot.commandsByName[commandName] ?: return
         val context = GuildCommandContext(bot, invokedPrefix, event)
 
-        coroutineScope.launch { execute(command, context) } // TODO: catch exceptions
+        coroutineScope.launch {
+            try {
+                execute(command, context)
+            } catch (t: Throwable) {
+                System.err.println("[WARN] Exception caught at command executor level:")
+                t.printStackTrace()
+            }
+        }
     }
 
     override suspend fun execute(command: Command, context: CommandContext) {

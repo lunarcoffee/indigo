@@ -24,17 +24,10 @@ class MiscCommands {
         execute(TrUser) { (user) ->
             send(
                 paginator {
+                    textPage("User is ${user.name}#${user.discriminator}")
                     embedPage {
-                        title = "user check:"
-                        description = "name is ${user.name}"
-                        color = 0xFFFF00
-                    }
-                    repeat(100) {
-                        embedPage {
-                            title = "user check:"
-                            description = "page #${it + 2}"
-                        }
-                        textPage("helo")
+                        title = "hello"
+                        description = "world"
                     }
                 }
             )
