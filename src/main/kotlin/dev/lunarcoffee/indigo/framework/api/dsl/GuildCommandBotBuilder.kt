@@ -2,6 +2,7 @@ package dev.lunarcoffee.indigo.framework.api.dsl
 
 import dev.lunarcoffee.indigo.framework.core.bot.GuildCommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandExecutor
+import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.JDABuilder
 
 class GuildCommandBotDsl(private val configPath: String) {
@@ -10,8 +11,8 @@ class GuildCommandBotDsl(private val configPath: String) {
     fun singlePrefix(prefix: String) = customPrefix { listOf(prefix) }
     fun multiplePrefixes(vararg prefixes: String) = customPrefix { prefixes.toList() }
 
-    fun customPrefix(prefixSelector: (String) -> List<String>) {
-        prefix = prefixSelector
+    fun customPrefix(prefixSelector: suspend (String) -> List<String>) {
+        prefix = { runBlocking { prefixSelector(it) } }
     }
 
     fun build(): GuildCommandBot {

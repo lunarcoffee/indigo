@@ -10,5 +10,8 @@ class GuildCommandContext(
     override val event: GuildMessageReceivedEvent
 ) : CommandContext, TextChannel by event.channel {
 
+    // Calls to [CommandContext.check] will modify this if they have failed.
+    override var checkFailed = false
+
     override val jda = bot.jda
 }

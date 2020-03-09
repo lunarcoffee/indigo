@@ -20,6 +20,10 @@ dependencies {
 
     implementation("org.yaml:snakeyaml:1.26")
     implementation("com.google.code.gson:gson:2.8.6")
+
+    // User bot:
+
+    implementation("org.litote.kmongo:kmongo-coroutine:3.12.2")
 }
 
 tasks {

@@ -3,9 +3,5 @@ package dev.lunarcoffee.indigo.framework.api.exts
 import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 import dev.lunarcoffee.indigo.framework.core.services.paginators.Paginator
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageEmbed
 
-suspend fun CommandContext.send(text: CharSequence): Message = sendMessage(text).await()
-suspend fun CommandContext.send(message: Message): Message = sendMessage(message).await()
-suspend fun CommandContext.send(embed: MessageEmbed): Message = sendMessage(embed).await()
 suspend fun CommandContext.send(paginator: Paginator): Message = paginator.start(this)

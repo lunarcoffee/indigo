@@ -3,11 +3,13 @@ package dev.lunarcoffee.indigo.framework.core.commands
 import dev.lunarcoffee.indigo.framework.core.bot.CommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.argparsers.QuotedArgumentParser
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.Transformer
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-// [prefix] takes a guild ID and returns the valid prefixes for that guild.
+// [util] takes a guild ID and returns the valid prefixes for that guild.
 class GuildCommandExecutor(private val prefix: (String) -> List<String>) : CommandExecutor, ListenerAdapter() {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
