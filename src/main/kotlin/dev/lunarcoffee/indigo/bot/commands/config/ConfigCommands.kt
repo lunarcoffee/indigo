@@ -1,6 +1,6 @@
 package dev.lunarcoffee.indigo.bot.commands.config
 
-import dev.lunarcoffee.indigo.bot.util.PrefixManager
+import dev.lunarcoffee.indigo.bot.util.prefixes.PrefixManager
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
@@ -14,7 +14,7 @@ class ConfigCommands {
         execute(TrRemaining) { (prefixes) ->
             check(prefixes, "I can't have more than 10 prefixes!") { size > 10 }
             check(prefixes, "Prefixes must be 1 to 5 characters long (inclusive)!") { any { it.length !in 1..5 } }
-            check(prefixes, "Prefixes may not contain spaces!") { any { ' ' in it } }
+            check(prefixes, "Prefixes may not contain spaces or backticks!") { any { ' ' in it || '`' in it } }
 
             if (checkFailed)
                 return@execute

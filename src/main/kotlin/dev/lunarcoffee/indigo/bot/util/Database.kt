@@ -1,5 +1,6 @@
 package dev.lunarcoffee.indigo.bot.util
 
+import dev.lunarcoffee.indigo.bot.util.prefixes.PrefixPair
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 

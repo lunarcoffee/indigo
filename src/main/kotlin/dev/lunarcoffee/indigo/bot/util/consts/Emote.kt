@@ -1,4 +1,4 @@
-package dev.lunarcoffee.indigo.bot.util
+package dev.lunarcoffee.indigo.bot.util.consts
 
 import net.dv8tion.jda.api.JDA
 

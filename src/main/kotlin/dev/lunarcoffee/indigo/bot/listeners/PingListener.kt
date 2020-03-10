@@ -1,6 +1,6 @@
 package dev.lunarcoffee.indigo.bot.listeners
 
-import dev.lunarcoffee.indigo.bot.util.PrefixManager
+import dev.lunarcoffee.indigo.bot.util.prefixes.PrefixManager
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.core.commands.ListenerGroup
 import kotlinx.coroutines.runBlocking
@@ -16,7 +16,13 @@ class PingListener : ListenerAdapter() {
             runBlocking {
                 val prefixes = PrefixManager.getPrefix(event.guild.id)
                 val prefixString = prefixes.joinToString(", ") { "`$it`" }
-                event.channel.success("My prefixes in this server are $prefixString!")
+
+                event.channel.success(
+                    if (prefixes.size == 1)
+                        "My prefix in this server is $prefixString!"
+                    else
+                        "My prefixes in this server are $prefixString!"
+                )
             }
         }
     }

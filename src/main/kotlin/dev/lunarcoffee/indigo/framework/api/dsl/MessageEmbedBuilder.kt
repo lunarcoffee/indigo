@@ -11,7 +11,7 @@ class MessageEmbedBuilderDsl {
     var description: String? = null
         set(value) = embed.setDescription(value).discard()
 
-    var color = 0xFFFFFF
+    var color = 0xD44F0D.also { embed.setColor(it) }
         set(value) = embed.setColor(value).discard()
 
     var image: String? = null
