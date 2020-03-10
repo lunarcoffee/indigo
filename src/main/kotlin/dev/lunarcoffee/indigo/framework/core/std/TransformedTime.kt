@@ -5,9 +5,9 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 
-class TransformedTime(val days: Int, val hours: Int, val minutes: Int, val seconds: Int) {
-    val totalSeconds = days * 86_400L + hours * 3_600 + minutes * 60 + seconds
-    val totalMilliseconds = totalSeconds * 1_000
+class TransformedTime(val totalSeconds: Long) {
+    constructor(days: Int, hours: Int, minutes: Int, seconds: Int) :
+            this(days * 86_400L + hours * 3_600 + minutes * 60 + seconds)
 
     fun asDuration() = Duration.of(totalSeconds, TimeUnit.SECONDS.toChronoUnit())
     fun asTimeFromNow(zone: ZoneId) = LocalDateTime.now(zone).plusSeconds(totalSeconds)
@@ -17,14 +17,14 @@ class TransformedTime(val days: Int, val hours: Int, val minutes: Int, val secon
             "0 seconds"
         } else {
             listOfNotNull(
-                days.ifOne("day"),
-                hours.ifOne("hour"),
-                minutes.ifOne("minute"),
-                seconds.ifOne("second")
+                (totalSeconds / 86_400 % 365).ifOne("day"),
+                (totalSeconds / 3_600 % 24).ifOne("hour"),
+                (totalSeconds / 60 % 60).ifOne("minute"),
+                (totalSeconds % 60).ifOne("second")
             ).joinToString(" ")
         }
     }
 
     // Pluralize based on value.
-    private fun Int.ifOne(string: String) = "$this ${if (this != 1) string else "${string}s"}".takeIf { this >= 1 }
+    private fun Long.ifOne(string: String) = "$this ${if (this == 1L) string else "${string}s"}".takeIf { this >= 1 }
 }

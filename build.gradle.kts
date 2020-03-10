@@ -24,6 +24,7 @@ dependencies {
     // User bot:
 
     implementation("org.litote.kmongo:kmongo-coroutine:3.12.2")
+    implementation("club.minnced:discord-webhooks:0.2.0")
 }
 
 tasks {

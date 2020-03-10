@@ -12,9 +12,9 @@ class ConfigCommands {
         description = "Sets the accepted bot prefixes for this server, overriding the previous prefixes."
 
         execute(TrRemaining) { (prefixes) ->
-            check(prefixes, "I can't have more than 10 prefixes!") { size > 10 }
-            check(prefixes, "Prefixes must be 1 to 5 characters long (inclusive)!") { any { it.length !in 1..5 } }
-            check(prefixes, "Prefixes may not contain spaces or backticks!") { any { ' ' in it || '`' in it } }
+            check(prefixes, "I can't have more than 10 prefixes!") { size <= 10 }
+            check(prefixes, "Prefixes must be 1 to 5 characters long (inclusive)!") { all { it.length in 1..5 } }
+            check(prefixes, "Prefixes may not contain spaces or backticks!") { all { ' ' !in it && '`' !in it } }
 
             if (checkFailed)
                 return@execute
