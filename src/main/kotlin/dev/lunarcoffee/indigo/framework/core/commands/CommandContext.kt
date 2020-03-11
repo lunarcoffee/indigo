@@ -12,10 +12,12 @@ interface CommandContext : HasBot, HasJDA, TextChannel {
 
     var checkFailed: Boolean
 
-    suspend fun <T> check(arg: T, failureMessage: String, check: T.() -> Boolean) {
-        if (!check(arg) && !checkFailed) {
+    suspend fun <T> check(arg: T, failureMessage: String, check: T.() -> Boolean): Unit? {
+        if (check(arg) && !checkFailed) {
             checkFailed = true
             failure(failureMessage)
+            return null
         }
+        return Unit
     }
 }
