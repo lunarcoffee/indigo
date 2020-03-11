@@ -3,6 +3,7 @@ package dev.lunarcoffee.indigo.framework.core.std
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 class TransformedTime(val totalSeconds: Long) {
@@ -10,7 +11,7 @@ class TransformedTime(val totalSeconds: Long) {
             this(days * 86_400L + hours * 3_600 + minutes * 60 + seconds)
 
     fun asDuration() = Duration.of(totalSeconds, TimeUnit.SECONDS.toChronoUnit())
-    fun asTimeFromNow(zone: ZoneId) = LocalDateTime.now(zone).plusSeconds(totalSeconds)
+    fun asTimeFromNow(zone: ZoneId) = ZonedDateTime.now(zone).plusSeconds(totalSeconds)
 
     override fun toString(): String {
         return if (totalSeconds == 0L) {

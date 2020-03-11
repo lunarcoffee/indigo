@@ -2,9 +2,11 @@ package dev.lunarcoffee.indigo.bot.commands.config
 
 import dev.lunarcoffee.indigo.bot.util.prefixes.PrefixManager
 import dev.lunarcoffee.indigo.bot.util.success
+import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRemaining
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrTimeZone
 
 @CommandGroup("Config")
 class ConfigCommands {
@@ -21,6 +23,15 @@ class ConfigCommands {
 
             PrefixManager.setPrefix(guild.id, prefixes.distinct())
             success("My prefixes for this server have been updated!")
+        }
+    }
+
+    fun setTimezone() = command("settz", "settimezone") {
+        description = "Sets your time zone (like UTC+2 or EST, any Java ZoneId) for the bot on all servers."
+
+        execute(TrTimeZone(true)) { (zone) ->
+            ZoneManager.setZone(event.author.id, zone)
+            success("Your time zone has been updated!")
         }
     }
 }
