@@ -27,7 +27,7 @@ class ConfigCommands {
     }
 
     fun setTimezone() = command("settz", "settimezone") {
-        description = "Sets your time zone (like UTC+2 or EST, any Java ZoneId) for the bot on all servers."
+        description = "Sets your timezone (you can try a major city or any Java ZoneId) for the bot on all servers."
 
         execute(TrTimeZone(true)) { (zone) ->
             ZoneManager.setZone(event.author.id, zone)
