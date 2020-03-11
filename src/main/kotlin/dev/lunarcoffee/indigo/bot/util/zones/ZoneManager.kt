@@ -11,6 +11,7 @@ object ZoneManager {
         .findOne(UserZone::userId eq userId)
         ?.zone
 
+    // Mainly used in commands to check if a user has a timezone associated with them.
     suspend fun isSet(userId: String) = getZone(userId) != null
 
     suspend fun setZone(userId: String, zone: ZoneId) {
