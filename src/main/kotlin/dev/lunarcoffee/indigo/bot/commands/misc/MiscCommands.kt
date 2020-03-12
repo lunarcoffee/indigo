@@ -14,7 +14,13 @@ import kotlin.system.measureNanoTime
 @CommandGroup("Misc")
 class MiscCommands {
     fun ping() = command("ping", "pong", "peng") {
-        description = "Tests to see how quick I will respond to you."
+        description = """
+            |`$name`
+            |Shows a few calculations relating to the speed at which I can get to you.
+            |This command shows the round-trip REST API latency, the time between the heartbeat send and the receiving
+            |of the ACK response for the WebSocket gateway, the time it takes to allocate a kotlin.Int on the stack,
+            |and the time it takes to allocate a java.lang.String with its no-args constructor on the heap.
+        """.trimMargin()
 
         execute {
             val restApiPing = jda.restPing.await()
@@ -36,7 +42,13 @@ class MiscCommands {
     }
 
     fun status() = command("status") {
-        description = "Gives various stats on how I am running."
+        description = """
+            |`$name`
+            |Gives various stats on how I am running.
+            |This command shows my memory usage, uptime, CPU architecture, logical CPU count (includes virtual CPUs
+            |from technology like Intel Hyperthreading), and host operating system. It also shows what language I am
+            |written in, the version of the JVM I am running on, and the number of alive threads.
+        """.trimMargin()
 
         execute {
             SystemStatus().run {

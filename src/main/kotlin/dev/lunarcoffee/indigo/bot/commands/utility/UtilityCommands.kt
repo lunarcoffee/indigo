@@ -20,9 +20,12 @@ import java.time.ZonedDateTime
 @CommandGroup("Utility")
 class UtilityCommands {
     fun remindIn() = command("remindin") {
-        description = "Sets a reminder to fire off and ping in some amount of time."
+        description = """
+            |`$name <delay> [message]`
+            |Sets a reminder to fire off and ping in some amount of time.
+        """.trimMargin()
 
-        execute(TrTime, TrRestJoined) { (delay, message) ->
+        execute(TrTime, TrRestJoined.optional("(no message)")) { (delay, message) ->
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
 
             val timeAfter = delay.asTimeFromNow(ZoneId.systemDefault())
@@ -35,7 +38,7 @@ class UtilityCommands {
 
     fun remindAt() = command("remindat") {
         description = """
-            |`$name <clock time> <message>` 
+            |`$name <clock time> [message]` 
             |Sets a reminder to fire off and ping you at some later time today.
             |This command is meant to be more convenient than `remindin` for reminders set for the same day. This
             |command needs a `clock time`, which is formatted specifically like `1:43pm` is. The am/pm must be present,
@@ -47,7 +50,7 @@ class UtilityCommands {
             |- `remindat 2:00am`
         """.trimMargin()
 
-        execute(TrClockTime, TrRestJoined) { (clockTime, message) ->
+        execute(TrClockTime, TrRestJoined.optional("(no message)")) { (clockTime, message) ->
             val zone = ZoneManager.getZone(event.author.id)
             check(zone, "You must set a timezone with the `settz` command!") { this == null } ?: return@execute
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
@@ -63,7 +66,20 @@ class UtilityCommands {
     }
 
     fun emote() = command("emote") {
-        description = "Sends custom emotes from any of the servers I am in."
+        description = """
+            |`$name <emote names...>`
+            |Sends custom emotes from servers I am in.
+            |This command takes from one to twenty (inclusive) `emote names`. I will then try to find an emote with
+            |each of those names, sending them. The purpose of this is to bypass server-specific emote usage, as any
+            |server which I am in will open up its pool of emotes for use.
+            |&{Conflicting names:}
+            |If there is more than one emote with the same name, you can add a `~n` to the end of the name, where `n`
+            |is an integer. This will make me get the `n`th emote I find with that name.
+            |&{Example usage:}
+            |- `emote omegalul`\n
+            |- `emote pogchamp xd omegalul xd xd`\n
+            |- `emote xd~1 xd~2`
+        """.trimMargin()
 
         execute(TrRemaining) { (names) ->
             check(names, "I can only send up to 20 emotes!") { size > 20 } ?: return@execute

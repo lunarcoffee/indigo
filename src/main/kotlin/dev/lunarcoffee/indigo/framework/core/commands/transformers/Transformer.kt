@@ -9,8 +9,18 @@ interface Transformer<T> {
     fun transform(ctx: CommandContext, args: MutableList<String>): T?
 
     // This returns an optional variant of this argument transformer.
-    fun optional(default: T? = null): Transformer<T?> {
+    fun optional(): Transformer<T?> {
         return object : Transformer<T?> {
+            override val isOptional = true
+
+            override fun transform(ctx: CommandContext, args: MutableList<String>) =
+                this@Transformer.transform(ctx, args)
+        }
+    }
+
+    // This returns an optional variant of this argument transformer with a default value.
+    fun optional(default: T): Transformer<T> {
+        return object : Transformer<T> {
             override val isOptional = true
 
             override fun transform(ctx: CommandContext, args: MutableList<String>) =
