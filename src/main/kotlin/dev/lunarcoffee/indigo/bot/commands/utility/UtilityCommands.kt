@@ -1,5 +1,7 @@
 package dev.lunarcoffee.indigo.bot.commands.utility
 
+import dev.lunarcoffee.indigo.bot.commands.utility.help.CommandHelpSender
+import dev.lunarcoffee.indigo.bot.commands.utility.help.ListHelpSender
 import dev.lunarcoffee.indigo.bot.commands.utility.remind.Reminder
 import dev.lunarcoffee.indigo.bot.commands.utility.remind.ReminderManager
 import dev.lunarcoffee.indigo.bot.util.formatTimeOnly
@@ -9,11 +11,9 @@ import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.exts.remove
 import dev.lunarcoffee.indigo.framework.api.exts.send
+import dev.lunarcoffee.indigo.framework.core.bot.CommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrClockTime
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRemaining
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRestJoined
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrTime
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -34,11 +34,21 @@ class UtilityCommands {
     }
 
     fun remindAt() = command("remindat") {
-        description = "Sets a reminder to fire off and ping you at some later time."
+        description = """
+            |`$name <clock time> <message>` 
+            |Sets a reminder to fire off and ping you at some later time today.
+            |This command is meant to be more convenient than `remindin` for reminders set for the same day. This
+            |command needs a `clock time`, which is formatted specifically like `1:43pm` is. The am/pm must be present,
+            |and there cannot be spaces. The `message` comes after and is optional, and can be anything you want within
+            |500 characters.
+            |&{Example usage:}
+            |- `remindat 12:00pm bake cookies`\n
+            |- `remindat 6:45pm stop playing league and study`\n
+            |- `remindat 2:00am`
+        """.trimMargin()
 
         execute(TrClockTime, TrRestJoined) { (clockTime, message) ->
             val zone = ZoneManager.getZone(event.author.id)
-
             check(zone, "You must set a timezone with the `settz` command!") { this == null } ?: return@execute
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
 
@@ -71,6 +81,24 @@ class UtilityCommands {
 
             runCatching { event.message.remove() }
             send("**$authorName**: $emotes")
+        }
+    }
+
+    fun help() = command("help") {
+        description = "Shows help text about commands and examples of using them."
+
+        execute(TrWord.optional()) { (commandName) ->
+            bot as CommandBot
+
+            send(
+                if (commandName == null) {
+                    ListHelpSender(bot)
+                } else {
+                    val command = bot.commandsByName[commandName]
+                    check(command, "I can't find that command!") { this == null } ?: return@execute
+                    CommandHelpSender(command!!)
+                }
+            )
         }
     }
 }
