@@ -6,4 +6,8 @@ object Emoji {
     const val COMPUTER = "\uD83D\uDCBB"
     const val ALARM_CLOCK = "\u23F0"
     const val PAGE_FACING_UP = "\uD83D\uDCC4"
+    const val RADIO_BUTTON = "\uD83D\uDD18"
+    const val THINKING = "\uD83E\uDD14"
+    const val POOL_8_BALL = "\uD83C\uDFB1"
+    const val GAME_DIE = "\uD83C\uDFB2"
 }

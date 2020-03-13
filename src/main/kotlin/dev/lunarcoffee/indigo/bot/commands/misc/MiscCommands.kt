@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 package dev.lunarcoffee.indigo.bot.commands.misc
 
 import dev.lunarcoffee.indigo.bot.commands.config.status.SystemStatus
@@ -22,6 +20,7 @@ class MiscCommands {
             |and the time it takes to allocate a java.lang.String with its no-args constructor on the heap.
         """.trimMargin()
 
+        @Suppress("UNUSED_VARIABLE")
         execute {
             val restApiPing = jda.restPing.await()
             val stackLatency = measureNanoTime { val a = 0 }

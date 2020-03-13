@@ -21,7 +21,7 @@ class GuildCommandBot(
     override val config = DefaultBotConfig(Yaml().load(File(configPath).readText()))
 
     override val commandGroups = CommandGroupLoader(config.sourceRoot).load()
-    override val commands = commandGroups.values.flatten()
+    override val commands = commandGroups.values.flatten().sortedBy { it.name }
     override val commandsByName = commands.flatMap { c -> c.names.map { it to c } }.toMap()
 
     override val listeners = EventListenerLoader(config.sourceRoot).load()

@@ -26,3 +26,5 @@ fun ClockTime.toZoned(zone: ZoneId) = ZonedDateTime
     .run { if (isPm) plusHours(12) else this }!!
 
 fun ZonedDateTime.formatTimeOnly() = format(TIME_ONLY_FORMATTER)!!
+
+fun List<*>.ifEmptyNone() = ifEmpty { "(none)" }.toString()
