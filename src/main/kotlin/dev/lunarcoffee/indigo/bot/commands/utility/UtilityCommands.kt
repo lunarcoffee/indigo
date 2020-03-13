@@ -11,7 +11,6 @@ import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.exts.remove
 import dev.lunarcoffee.indigo.framework.api.exts.send
-import dev.lunarcoffee.indigo.framework.core.bot.CommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
 import java.time.ZoneId
@@ -130,8 +129,6 @@ class UtilityCommands {
         """.trimMargin()
 
         execute(TrWord.optional()) { (commandName) ->
-            bot as CommandBot
-
             send(
                 if (commandName == null) {
                     ListHelpSender(bot)
