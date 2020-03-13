@@ -5,6 +5,7 @@ import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
+import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRemaining
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRole
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrTimeZone
@@ -14,15 +15,22 @@ import net.dv8tion.jda.api.Permission
 class ConfigCommands {
     fun setCfgR() = command("setcfgr", "setconfigrole") {
         description = """
-            
+            |`$name <role name/id/ping>`
+            |Sets the bot configurer role, allowing those with it to use server-wide config commands.
+            |This command sets the bot configurer role. Anyone with the role can use server-wide conifg commands. It is
+            |not required to use personal config commands, like `settz` for setting a user's timezone. You must have
+            |the administrator permission to use this command.
+            |&{Example usage:}
+            |- `setcfgr Moderators`\n
+            |- `setcfgr @Admin`\n
+            |- `setcfgr 510820375022731274`
         """.trimMargin()
 
         execute(TrRole) { (role) ->
-            check(event.member!!, "You must be an administrator to use this command!") {
-                hasPermission(Permission.ADMINISTRATOR)
-            } ?: return@execute
+            checkPermission("You must be an admin to use this command!", Permission.ADMINISTRATOR) ?: return@execute
 
-
+            GuildSettingsManager.update(guild.id, newConfigRoleId = role.id)
+            success("The configurer role has been updated!")
         }
     }
 
@@ -41,6 +49,7 @@ class ConfigCommands {
         """.trimMargin()
 
         execute(TrRemaining) { (prefixes) ->
+            checkAdminOrConfigRole()
             check(prefixes, "I can't have more than 10 prefixes!") { size > 10 }
             check(prefixes, "Prefixes must be 1 to 5 characters long (inclusive)!") { any { it.length !in 1..5 } }
             check(prefixes, "Prefixes may not contain spaces or backticks!") { any { ' ' in it || '`' in it } }
@@ -69,6 +78,13 @@ class ConfigCommands {
         execute(TrTimeZone(true)) { (zone) ->
             ZoneManager.setZone(event.author.id, zone)
             success("Your time zone has been updated!")
+        }
+    }
+
+    private suspend fun GuildCommandContext.checkAdminOrConfigRole(): Unit? {
+        val configRole = GuildSettingsManager.get(guild.id).configRoleId ?: ""
+        return check(event.member!!, "You must be an admin or have the configurer role to use this command!") {
+            !hasPermission(Permission.ADMINISTRATOR) && configRole !in roles.map { it.id }
         }
     }
 }
