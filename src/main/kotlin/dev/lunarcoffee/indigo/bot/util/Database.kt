@@ -10,7 +10,7 @@ object Database {
     private val client = KMongo.createClient().coroutine
     private val db = client.getDatabase("Indigo-0")
 
-    val prefixStore = db.getCollection<PrefixPair>("PrefixStore")
+    val prefixStore = db.getCollection<PrefixPair>("PrefixStore") // TODO: unified guild settings
     val zoneStore = db.getCollection<UserZone>("ZoneStore")
     val reminderStore = db.getCollection<Reminder>("ReminderStore")
 }

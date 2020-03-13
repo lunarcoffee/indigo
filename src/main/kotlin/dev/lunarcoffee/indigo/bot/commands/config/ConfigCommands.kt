@@ -5,9 +5,8 @@ import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRemaining
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrTimeZone
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrWord
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
+import net.dv8tion.jda.api.Permission
 
 @CommandGroup("Config")
 class ConfigCommands {
@@ -16,8 +15,12 @@ class ConfigCommands {
             
         """.trimMargin()
 
-        execute(TrWord) { (role) ->
-            // TODO: TrRole
+        execute(TrRole) { (role) ->
+            check(event.member!!, "You must be an administrator to use this command!") {
+                hasPermission(Permission.ADMINISTRATOR)
+            } ?: return@execute
+
+
         }
     }
 

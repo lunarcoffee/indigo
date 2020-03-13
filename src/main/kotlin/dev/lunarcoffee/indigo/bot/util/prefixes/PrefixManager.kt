@@ -10,7 +10,7 @@ object PrefixManager {
         .prefixStore
         .findOne(PrefixPair::guildId eq guildId)
         ?.prefixes
-        ?: setPrefix(guildId, listOf(".."))
+        ?: setPrefix(guildId, listOf("::"))
 
     suspend fun setPrefix(guildId: String, prefixes: List<String>): List<String> {
         val prefixPair = PrefixPair(guildId, prefixes)

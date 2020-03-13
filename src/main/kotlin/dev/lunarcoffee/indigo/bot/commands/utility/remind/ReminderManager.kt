@@ -17,6 +17,11 @@ import java.time.ZonedDateTime
 object ReminderManager {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
+    suspend fun reloadReminders(jda: JDA) {
+        for (reminder in Database.reminderStore.find().toList())
+            scheduleReminder(reminder, jda)
+    }
+
     suspend fun addReminder(reminder: Reminder, jda: JDA) {
         Database.reminderStore.insertOne(reminder)
         scheduleReminder(reminder, jda)

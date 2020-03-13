@@ -22,16 +22,24 @@ class UtilityCommands {
     fun remindIn() = command("remindin") {
         description = """
             |`$name <delay> [message]`
-            |Sets a reminder to fire off and ping in some amount of time.
+            |Sets a reminder to fire off and ping you in some amount of time.
+            |This command takes a `delay` time string and an optional `message`. After the amount of time specified, I
+            |will ping you with your message. The time string is formatted specifically like `3h 30m` or similar (look
+            |at the example usages below), and the message can be at most 500 characters.
+            |&{Example usage:}
+            |- `remindin 10h thaw the meat for dinner`\n
+            |- `remindin 1d 30m 30s hello me`\n
+            |- `remindin 20m`
         """.trimMargin()
 
         execute(TrTime, TrRestJoined.optional("(no message)")) { (delay, message) ->
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
 
             val timeAfter = delay.asTimeFromNow(ZoneId.systemDefault())
-            val reminder = event.run { Reminder(message, timeAfter, guild.id, channel.id, messageId, author.id) }
 
+            val reminder = event.run { Reminder(message, timeAfter, guild.id, channel.id, messageId, author.id) }
             ReminderManager.addReminder(reminder, jda)
+
             success("I will remind you in `$delay`!")
         }
     }
@@ -59,8 +67,8 @@ class UtilityCommands {
             check(timeAfter, "That time has already passed!") { isBefore(ZonedDateTime.now(zone)) } ?: return@execute
 
             val reminder = event.run { Reminder(message, timeAfter, guild.id, channel.id, messageId, author.id) }
-
             ReminderManager.addReminder(reminder, jda)
+
             success("I will remind you at `${timeAfter.formatTimeOnly()}`!")
         }
     }
@@ -101,7 +109,25 @@ class UtilityCommands {
     }
 
     fun help() = command("help") {
-        description = "Shows help text about commands and examples of using them."
+        description = """
+            |`$name [command name]`
+            |Shows help text about commands and examples of using them.
+            |This command, without a `command name`, will show all my command groups with their commands. With a name,
+            |this will show information about the command, including its aliases (names which you can use in place of
+            |the normal name), short description, usage string, and extended description.
+            |&{Reading usage strings:}
+            |Usually, the example usages are good enough, but for exactly how you can use a command, the usage string
+            |can help. Each usage string will start with the command name, then have a list of arguments. These
+            |arguments are usually just formatted strings of text that mean something, like a number or name. These
+            |characters have special meaning:\n
+            |- `<arg>`: required argument\n
+            |- `[arg]`: optional argument\n
+            |- `arg...`: one or more of the argument\n
+            |These can be combined, as with `[arg...]` (one or more of an optional argument), for instance.
+            |&{Example usage:}
+            |- `help ping`\n
+            |- `help`
+        """.trimMargin()
 
         execute(TrWord.optional()) { (commandName) ->
             bot as CommandBot

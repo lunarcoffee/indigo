@@ -14,7 +14,7 @@ class GuildCommandBot(
     private val jdaBuilder: JDABuilder,
     override val commandExecutor: CommandExecutor,
     configPath: String
-) : CommandBot, ListenerBot {
+) : CommandBot {
 
     override lateinit var jda: JDA
 
