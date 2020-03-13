@@ -1,11 +1,13 @@
 package dev.lunarcoffee.indigo.bot.commands.config
 
-import dev.lunarcoffee.indigo.bot.util.prefixes.PrefixManager
+import dev.lunarcoffee.indigo.bot.util.guildsettings.GuildSettingsManager
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRemaining
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRole
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrTimeZone
 import net.dv8tion.jda.api.Permission
 
 @CommandGroup("Config")
@@ -46,7 +48,7 @@ class ConfigCommands {
             if (checkFailed)
                 return@execute
 
-            PrefixManager.setPrefix(guild.id, prefixes.distinct())
+            GuildSettingsManager.update(guild.id, newPrefixes = prefixes.distinct())
             success("My prefixes for this server have been updated!")
         }
     }
@@ -55,7 +57,7 @@ class ConfigCommands {
         description = """
             |`$name <timezone city/name>`
             |Sets your timezone (you can try a major city or any Java ZoneId) for the bot on all servers.
-            |This command allows you to use other commands which depend on your timezone, like `remindat`. The `timezone
+            |This command lets you use other commands which depend on your timezone, like `remindat`. The `timezone
             |city/name` should be the city corresponding to your timezone, or anything on 
             |[this](https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids/) list will probably
             |work.

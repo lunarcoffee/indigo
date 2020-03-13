@@ -1,6 +1,6 @@
 package dev.lunarcoffee.indigo.bot.listeners
 
-import dev.lunarcoffee.indigo.bot.util.prefixes.PrefixManager
+import dev.lunarcoffee.indigo.bot.util.guildsettings.GuildSettingsManager
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.core.commands.ListenerGroup
 import kotlinx.coroutines.runBlocking
@@ -14,7 +14,7 @@ class PingListener : ListenerAdapter() {
 
         if (event.message.contentRaw in mentions) {
             runBlocking {
-                val prefixes = PrefixManager.getPrefix(event.guild.id)
+                val prefixes = GuildSettingsManager.get(event.guild.id).prefixes
                 val prefixString = prefixes.joinToString(", ") { "`$it`" }
 
                 event.channel.success(

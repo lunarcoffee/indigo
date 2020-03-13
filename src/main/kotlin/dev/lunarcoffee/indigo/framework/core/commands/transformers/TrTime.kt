@@ -29,7 +29,7 @@ object TrTime : Transformer<TransformedTime> {
 
     private fun List<String>.joinOr() = joinToString("|")
 
-    // Remove any that doesn't end with the desired time prefixes and sum the numbers from the remaining time strings
+    // Remove any that doesn't end with the desired time guildsettings and sum the numbers from the remaining time strings
     // to get the total time value.
     private fun List<String>.filterSuffixAndGet(endsWith: List<String>) =
         filter { s -> endsWith.any { s.endsWith(it) } }
