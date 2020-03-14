@@ -1,9 +1,6 @@
 package dev.lunarcoffee.indigo.framework.core.std
 
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import java.time.*
 import java.util.concurrent.TimeUnit
 
 class TransformedTime(val totalSeconds: Long) {
@@ -18,7 +15,7 @@ class TransformedTime(val totalSeconds: Long) {
             "0 seconds"
         } else {
             listOfNotNull(
-                (totalSeconds / 86_400 % 365).ifOne("day"),
+                (totalSeconds / 86_400).ifOne("day"),
                 (totalSeconds / 3_600 % 24).ifOne("hour"),
                 (totalSeconds / 60 % 60).ifOne("minute"),
                 (totalSeconds % 60).ifOne("second")

@@ -2,11 +2,11 @@ package dev.lunarcoffee.indigo.bot.commands.utility
 
 import dev.lunarcoffee.indigo.bot.commands.utility.help.CommandHelpSender
 import dev.lunarcoffee.indigo.bot.commands.utility.help.ListHelpSender
-import dev.lunarcoffee.indigo.bot.commands.utility.remind.Reminder
-import dev.lunarcoffee.indigo.bot.commands.utility.remind.ReminderManager
-import dev.lunarcoffee.indigo.bot.util.formatTimeOnly
-import dev.lunarcoffee.indigo.bot.util.success
-import dev.lunarcoffee.indigo.bot.util.toZoned
+import dev.lunarcoffee.indigo.bot.commands.utility.reminders.Reminder
+import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderManager
+import dev.lunarcoffee.indigo.bot.commands.utility.reminders.remindl.ReminderCancelSender
+import dev.lunarcoffee.indigo.bot.commands.utility.reminders.remindl.ReminderListSender
+import dev.lunarcoffee.indigo.bot.util.*
 import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.exts.remove
@@ -35,8 +35,10 @@ class UtilityCommands {
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
 
             val timeAfter = delay.asTimeFromNow(ZoneId.systemDefault())
+            val timeString = timeAfter.formatDefault()
 
-            val reminder = event.run { Reminder(message, timeAfter, guild.id, channel.id, messageId, author.id) }
+            val reminder = event
+                .run { Reminder(message, timeAfter, timeString, guild.id, channel.id, messageId, author.id) }
             ReminderManager.addReminder(reminder, jda)
 
             success("I will remind you in `$delay`!")
@@ -65,10 +67,32 @@ class UtilityCommands {
             val timeAfter = clockTime.toZoned(zone!!)
             check(timeAfter, "That time has already passed!") { isBefore(ZonedDateTime.now(zone)) } ?: return@execute
 
-            val reminder = event.run { Reminder(message, timeAfter, guild.id, channel.id, messageId, author.id) }
+            val timeString = timeAfter.formatDefault()
+            val reminder = event
+                .run { Reminder(message, timeAfter, timeString, guild.id, channel.id, messageId, author.id) }
             ReminderManager.addReminder(reminder, jda)
 
             success("I will remind you at `${timeAfter.formatTimeOnly()}`!")
+        }
+    }
+
+    fun remindl() = command("remindl", "reminders") {
+        description = """
+            |`$name ["cancel" which]`
+            |Shows your reminders or cancels one of them.
+            |This command used without arguments (see the first example usage) will list each pending reminder you 
+            |have along with a number. If `cancel` and `which` are specified, I will cancel the reminder with number
+            |equal to `which`.
+            |&{Example usage:}
+            |- `remindl`\n
+            |- `remindl cancel 2`
+        """.trimMargin()
+
+        execute(TrRemaining.optional()) { (cancel) ->
+            if (cancel == null)
+                send(ReminderListSender(event.author.id))
+            else if (cancel.size == 2 && cancel[0] == "cancel" && cancel[1].toIntOrNull() != null)
+                send(ReminderCancelSender(event.author.id, cancel[1].toInt()))
         }
     }
 
@@ -122,6 +146,7 @@ class UtilityCommands {
             |- `<arg>`: required argument\n
             |- `[arg]`: optional argument\n
             |- `arg...`: one or more of the argument\n
+            |- `"arg"`: that specific string of text within the quotes\n
             |These can be combined, as with `[arg...]` (one or more of an optional argument), for instance.
             |&{Example usage:}
             |- `help ping`\n
