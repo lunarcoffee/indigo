@@ -6,14 +6,15 @@ import dev.lunarcoffee.indigo.bot.commands.utility.reminders.Reminder
 import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderManager
 import dev.lunarcoffee.indigo.bot.commands.utility.reminders.remindl.ReminderCancelSender
 import dev.lunarcoffee.indigo.bot.commands.utility.reminders.remindl.ReminderListSender
-import dev.lunarcoffee.indigo.bot.util.*
+import dev.lunarcoffee.indigo.bot.util.formatDefault
+import dev.lunarcoffee.indigo.bot.util.success
+import dev.lunarcoffee.indigo.bot.util.toZoned
 import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.exts.remove
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
-import java.time.ZoneId
 import java.time.ZonedDateTime
 
 @CommandGroup("Utility")
@@ -32,9 +33,11 @@ class UtilityCommands {
         """.trimMargin()
 
         execute(TrTime, TrRestJoined.optional("(no message)")) { (delay, message) ->
+            val zone = ZoneManager.getZone(event.author.id)
+            check(zone, "You must set a timezone with the `settz` command!") { this == null } ?: return@execute
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
 
-            val timeAfter = delay.asTimeFromNow(ZoneId.systemDefault())
+            val timeAfter = delay.asTimeFromNow(zone!!)
             val timeString = timeAfter.formatDefault()
 
             val reminder = event
@@ -48,11 +51,15 @@ class UtilityCommands {
     fun remindAt() = command("remindat") {
         description = """
             |`$name <clock time> [message]` 
-            |Sets a reminder to fire off and ping you at some later time today.
-            |This command is meant to be more convenient than `remindin` for reminders set for the same day. This
+            |Sets a reminder to fire off and ping you at some later time within a day.
+            |This command is meant to be more convenient than `remindin` for reminders set within 24 hours. This
             |command needs a `clock time`, which is formatted specifically like `1:43pm` is. The am/pm must be present,
             |and there cannot be spaces. The `message` comes after and is optional, and can be anything you want within
             |500 characters.
+            |&{Time calculations:}
+            |The time at which I will remind you will be the next time your specified `clock time` passes. For example,
+            |if you use `remindat 8:00am make coffee` at 10:00 PM, the reminder will fire tomorrow at 8:00 AM. If you 
+            |use the same command at 7:00 AM though, it will fire in just one hour.
             |&{Example usage:}
             |- `remindat 12:00pm bake cookies`\n
             |- `remindat 6:45pm stop playing league and study`\n
@@ -64,15 +71,17 @@ class UtilityCommands {
             check(zone, "You must set a timezone with the `settz` command!") { this == null } ?: return@execute
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
 
-            val timeAfter = clockTime.toZoned(zone!!)
-            check(timeAfter, "That time has already passed!") { isBefore(ZonedDateTime.now(zone)) } ?: return@execute
+            // Use the nearest instance of the time specified.
+            val timeAfter = clockTime
+                .toZoned(zone!!)
+                .run { if (isBefore(ZonedDateTime.now(zone))) plusDays(1) else this }
 
             val timeString = timeAfter.formatDefault()
             val reminder = event
                 .run { Reminder(message, timeAfter, timeString, guild.id, channel.id, messageId, author.id) }
             ReminderManager.addReminder(reminder, jda)
 
-            success("I will remind you at `${timeAfter.formatTimeOnly()}`!")
+            success("I will remind you at `${timeAfter.formatDefault()}`!")
         }
     }
 
