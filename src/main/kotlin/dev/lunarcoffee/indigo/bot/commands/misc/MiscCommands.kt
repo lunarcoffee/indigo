@@ -1,6 +1,6 @@
 package dev.lunarcoffee.indigo.bot.commands.misc
 
-import dev.lunarcoffee.indigo.bot.commands.config.status.SystemStatus
+import dev.lunarcoffee.indigo.bot.commands.misc.status.SystemStatus
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.api.dsl.command

@@ -2,11 +2,13 @@ package dev.lunarcoffee.indigo.bot.util
 
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
 import dev.lunarcoffee.indigo.bot.util.consts.Emote
+import dev.lunarcoffee.indigo.framework.api.exts.await
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.bot.Bot
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
 import dev.lunarcoffee.indigo.framework.core.std.ClockTime
 import net.dv8tion.jda.api.entities.MessageChannel
+import net.dv8tion.jda.api.events.message.guild.GenericGuildMessageEvent
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -31,6 +33,11 @@ fun ClockTime.toZoned(zone: ZoneId) = ZonedDateTime
 fun ZonedDateTime.formatDefault() = format(DEFAULT_FORMATTER)!!
 fun ZonedDateTime.formatTimeOnly() = format(TIME_ONLY_FORMATTER)!!
 
+fun LocalDateTime.formatDefault() = format(DEFAULT_FORMATTER)!!
+fun LocalDateTime.formatTimeOnly() = format(TIME_ONLY_FORMATTER)!!
+
 fun List<*>.ifEmptyNone() = ifEmpty { "(none)" }.toString()
 
 fun GuildCommandContext.isAuthorOwner(bot: Bot) = event.author.id == bot.config["ownerId"]!!
+
+suspend fun GenericGuildMessageEvent.getMessage() = channel.retrieveMessageById(messageId).await()

@@ -87,7 +87,7 @@ class UtilityCommands {
         }
     }
 
-    fun remindl() = command("remindl", "reminders") {
+    fun reminders() = command("reminders", "remindl") {
         description = """
             |`$name ["cancel" which]`
             |Shows your reminders or cancels one of them.
@@ -123,6 +123,7 @@ class UtilityCommands {
             |- `[arg]`: optional argument\n
             |- `arg...`: one or more of the argument\n
             |- `"arg"`: that specific string of text within the quotes\n
+            |- `arg1|arg2`: either arg1 or arg2\n
             |These can be combined, as with `[arg...]` (one or more of an optional argument), for instance.
             |&{Example usage:}
             |- `$name ping`\n

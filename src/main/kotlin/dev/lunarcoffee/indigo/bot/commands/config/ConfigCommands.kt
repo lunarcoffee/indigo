@@ -1,19 +1,18 @@
 package dev.lunarcoffee.indigo.bot.commands.config
 
+import dev.lunarcoffee.indigo.bot.util.failure
 import dev.lunarcoffee.indigo.bot.util.guildsettings.GuildSettingsManager
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRemaining
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRole
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrTimeZone
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
 import net.dv8tion.jda.api.Permission
 
 @CommandGroup("Config")
 class ConfigCommands {
-    fun setCfgR() = command("setcfgr", "setconfigrole") {
+    fun setConfigRole() = command("setconfigrole", "setcfgr") {
         description = """
             |`$name <role name/id/ping>`
             |Sets the bot configurer role, allowing those with it to use server-wide config commands.
@@ -34,7 +33,7 @@ class ConfigCommands {
         }
     }
 
-    fun setPfx() = command("setpfx", "setprefix") {
+    fun setPrefix() = command("setprefix", "setpfx") {
         description = """
             |`$name <prefixes...>`
             |Sets the accepted bot prefixes for this server, overriding the previous prefixes.
@@ -62,7 +61,7 @@ class ConfigCommands {
         }
     }
 
-    fun setTz() = command("settz", "settimezone") {
+    fun setTimezone() = command("settimezone", "settz") {
         description = """
             |`$name <timezone city/name>`
             |Sets your timezone (you can try a major city or any Java ZoneId) for the bot on all servers.
@@ -78,6 +77,63 @@ class ConfigCommands {
         execute(TrTimeZone(true)) { (zone) ->
             ZoneManager.setZone(event.author.id, zone)
             success("Your time zone has been updated!")
+        }
+    }
+
+    fun setStarboard() = command("setstarboard", "setsb") {
+        description = """
+            |`$name <"channel"|"threshold"|"off"> [channel name|star threshold]`
+            |Configures the starboard for this server.
+            |This command lets you set the starboard channel, threshold (minimum star count), and availability. If the
+            |first argument is `channel`, the second must be a channel in the server. This will automatically enable
+            |the starboard. If the first argument is `threshold`, the second must be the minimum star count. If the 
+            |first argument is `on`, there should be no second argument. You must have the bot configurer role (see 
+            |help for `setcfgr`) or the administrator permission to use this command.
+            |&{Default values:}
+            |By default, in order to be as non-intrusive as possible, the starboard is disabled. When it is enabled,
+            |the star threshold will be just one. Disabling the starboard will not reset any previous settings.
+            |&{Example usage:}
+            |- `$name channel #starboard`\n
+            |- `$name threshold 3`\n
+            |- `$name off`
+        """.trimMargin()
+
+        execute(TrWord, TrTextChannel.optional(), TrInt.optional()) { (action, channel, threshold) ->
+            checkAdminOrConfigRole() ?: return@execute
+
+            val starboard = GuildSettingsManager.get(guild.id).starboard
+            when (action) {
+                "channel" -> {
+                    checkNull(channel, "You must provide a channel to enable the starboard!") ?: return@execute
+                    checkNotNull(threshold, "You must only provide a channel!") ?: return@execute
+
+                    val newStarboard = starboard.apply {
+                        channelId = channel!!.id
+                        enabled = true
+                    }
+                    GuildSettingsManager.update(guild.id, newStarboard = newStarboard)
+                    success("The starboard has been enabled!")
+                }
+                "threshold" -> {
+                    checkNull(threshold, "You must provide a threshold for me to set!") ?: return@execute
+                    checkNotNull(channel, "You must only provide a threshold!") ?: return@execute
+
+                    val newStarboard = starboard.apply { this@apply.threshold = threshold!! }
+                    GuildSettingsManager.update(guild.id, newStarboard = newStarboard)
+                    success("The starboard threshold has been updated!")
+                }
+                "off" -> {
+                    if (channel != null || threshold != null) {
+                        failure("This action takes no arguments!")
+                        return@execute
+                    }
+
+                    val newStarboard = starboard.apply { enabled = false }
+                    GuildSettingsManager.update(guild.id, newStarboard = newStarboard)
+                    success("The starboard has been disabled!")
+                }
+                else -> failure("That's not right. Type `${invokedPrefix}help ${this@command.name}` for information.")
+            }
         }
     }
 

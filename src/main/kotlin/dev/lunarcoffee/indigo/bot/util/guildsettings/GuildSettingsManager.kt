@@ -12,22 +12,20 @@ object GuildSettingsManager {
     suspend fun update(
         guildId: String,
         newPrefixes: List<String>? = null,
-        newConfigRoleId: String? = null
+        newConfigRoleId: String? = null,
+        newStarboard: StarboardSettings? = null
     ): GuildSettings {
 
         val settings = get(guildId).apply {
             prefixes = newPrefixes ?: prefixes
             configRoleId = newConfigRoleId ?: configRoleId
+            starboard = newStarboard ?: starboard
         }
 
         Database.prefixStore.updateOne(GuildSettings::guildId eq guildId, settings, UpdateOptions().upsert(true))
         return settings
     }
 
-    private suspend fun insertDefault(guildId: String): GuildSettings {
-        val settings = GuildSettings(guildId, listOf(".."), null)
-        Database.prefixStore.insertOne(settings)
-
-        return settings
-    }
+    private suspend fun insertDefault(guildId: String) =
+        GuildSettings(guildId).apply { Database.prefixStore.insertOne(this) }
 }

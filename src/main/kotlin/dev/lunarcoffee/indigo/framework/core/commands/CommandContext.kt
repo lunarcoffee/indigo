@@ -22,4 +22,5 @@ interface CommandContext : HasBot, HasJDA, TextChannel {
     }
 
     suspend fun <T> checkNull(arg: T, failureMessage: String) = check(arg, failureMessage) { this == null }
+    suspend fun <T> checkNotNull(arg: T, failureMessage: String) = check(arg, failureMessage) { this != null }
 }

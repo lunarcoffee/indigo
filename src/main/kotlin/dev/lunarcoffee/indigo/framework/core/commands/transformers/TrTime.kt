@@ -10,13 +10,13 @@ object TrTime : Transformer<TransformedTime> {
     private val minuteS = listOf("m", "min", "mins", "minute", "minutes")
     private val secondS = listOf("s", "sec", "secs", "second", "seconds")
 
-    private val timeStringRegex =
+    private val timeString =
         """(\d{1,8})(${dayS.joinOr()}|${hourS.joinOr()}|${minuteS.joinOr()}|${secondS.joinOr()})""".toRegex()
 
     override val errorMessage = "A time string was formatted incorrectly!"
 
     override fun transform(ctx: CommandContext, args: MutableList<String>): TransformedTime? {
-        val timeStrings = args.takeWhile { it matches timeStringRegex }.ifEmpty { return null }
+        val timeStrings = args.takeWhile { it matches timeString }.ifEmpty { return null }
         args.removeAll(timeStrings)
 
         return timeStrings.run {
@@ -31,10 +31,10 @@ object TrTime : Transformer<TransformedTime> {
 
     private fun List<String>.joinOr() = joinToString("|")
 
-    // Remove any that doesn't end with the desired time guildsettings and sum the numbers from the remaining time strings
-    // to get the total time value.
+    // Remove any that doesn't end with the desired time suffix and sum the numbers from the remaining time strings to
+    // get the total time value.
     private fun List<String>.filterSuffixAndGet(endsWith: List<String>) =
         filter { s -> endsWith.any { s.endsWith(it) } }
-            .map { timeStringRegex.matchEntire(it)!!.groupValues[1] }
+            .map { timeString.matchEntire(it)!!.groupValues[1] }
             .sumBy { it.toInt() }
 }

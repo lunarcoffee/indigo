@@ -11,13 +11,12 @@ object TrRole : Transformer<Role> {
 
     override fun transform(ctx: CommandContext, args: MutableList<String>): Role? {
         val nameOrId = args.firstOrNull() ?: return null
-        args.removeAt(0)
-
         val mentionMatch = roleMention.matchEntire(nameOrId)
+
         return when {
             mentionMatch != null -> ctx.guild.getRoleById(mentionMatch.groupValues[1])
             nameOrId matches roleId -> ctx.guild.getRoleById(nameOrId)
-            else -> ctx.jda.getRolesByName(nameOrId, true).firstOrNull { it.guild.id == ctx.guild.id }
-        }
+            else -> ctx.guild.getRolesByName(nameOrId, true).firstOrNull()
+        }?.also { args.removeAt(0) }
     }
 }

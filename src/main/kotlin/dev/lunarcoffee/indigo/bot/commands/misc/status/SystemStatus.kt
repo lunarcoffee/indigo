@@ -1,4 +1,4 @@
-package dev.lunarcoffee.indigo.bot.commands.config.status
+package dev.lunarcoffee.indigo.bot.commands.misc.status
 
 import dev.lunarcoffee.indigo.framework.core.std.TransformedTime
 import java.lang.management.ManagementFactory

@@ -12,14 +12,13 @@ object TrMember : Transformer<Member> {
 
     override fun transform(ctx: CommandContext, args: MutableList<String>): Member? {
         val nameOrId = args.firstOrNull() ?: return null
-        args.removeAt(0)
-
         val mentionMatch = userMention.matchEntire(nameOrId)
+
         return when {
             mentionMatch != null -> ctx.guild.getMemberById(mentionMatch.groupValues[1])
             nameOrId matches userTag -> ctx.guild.getMemberByTag(nameOrId)
             nameOrId matches userId -> ctx.guild.getMemberById(nameOrId)
             else -> ctx.guild.getMembersByName(nameOrId, true).firstOrNull()
-        }
+        }?.also { args.removeAt(0) }
     }
 }

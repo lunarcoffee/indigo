@@ -44,6 +44,12 @@ class MessageEmbedBuilderDsl {
     fun field(name: String, value: String) = embed.addField(name, value, false).discard()
     fun inlineField(name: String, value: String) = embed.addField(name, value, true).discard()
 
+    fun field(init: MessageEmbedFieldBuilderDsl.() -> Unit) =
+        embed.addField(MessageEmbedFieldBuilderDsl().apply(init).build(false))
+
+    fun inlineField(init: MessageEmbedFieldBuilderDsl.() -> Unit) =
+        embed.addField(MessageEmbedFieldBuilderDsl().apply(init).build(true))
+
     fun author(name: String, url: String? = null, iconUrl: String? = null) =
         embed.setAuthor(name, url, iconUrl).discard()
 
