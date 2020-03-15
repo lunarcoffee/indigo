@@ -1,2 +1,2 @@
 # Indigo
-Multi-purpose Discord bot and framework.
+Multipurpose Discord bot and framework.
