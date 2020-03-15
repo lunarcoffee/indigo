@@ -7,13 +7,14 @@ import dev.lunarcoffee.indigo.framework.core.bot.CommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 import dev.lunarcoffee.indigo.framework.core.std.ContentSender
 
-class ListHelpSender(private val bot: CommandBot) : ContentSender {
+class ListHelpSender(private val bot: CommandBot, private val isOwner: Boolean) : ContentSender {
     override suspend fun send(ctx: CommandContext) {
         ctx.send(
             embed {
                 title = "${Emoji.PAGE_FACING_UP}  All commands:"
                 description = bot
                     .commandGroups
+                    .filter { (group, _) -> isOwner || group != "Restricted" }
                     .map { (group, commands) -> "**$group**: ${commands.map { it.name }}" }
                     .joinToString("\n")
 

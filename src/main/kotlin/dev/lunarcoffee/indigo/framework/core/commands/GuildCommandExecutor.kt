@@ -1,11 +1,9 @@
 package dev.lunarcoffee.indigo.framework.core.commands
 
+import dev.lunarcoffee.indigo.bot.util.failure
 import dev.lunarcoffee.indigo.framework.core.bot.CommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.argparsers.QuotedArgumentParser
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.Transformer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
@@ -42,12 +40,23 @@ class GuildCommandExecutor(private val prefix: (String) -> List<String>) : Comma
 
         val stringArgs = QuotedArgumentParser(context.event.message.contentRaw).split().toMutableList()
         val argsOptional = command
-            .args
-            .asList()
-            .map { (it as Transformer<*>).transform(context, stringArgs) ?: if (it.isOptional) Unit else null }
+            .argTransfomers
+            .map { it.transform(context, stringArgs) ?: if (it.isOptional) Unit else null }
 
-        if (null in argsOptional || stringArgs.isNotEmpty())
+        val firstNull = argsOptional.indexOf(null)
+        val typeForInfoMessage by lazy { "Type `${context.invokedPrefix}help ${command.name}` for information." }
+
+        // Send the error message of the first failed transform if any failed.
+        if (firstNull >= 0) {
+            context.failure("${command.argTransfomers[firstNull].errorMessage} $typeForInfoMessage")
             return
+        }
+
+        // If [stringArgs] is not empty not all arguments have been transformed; there are excess arguments provided.
+        if (stringArgs.isNotEmpty()) {
+            context.failure("That's not right. $typeForInfoMessage")
+            return
+        }
 
         val args = argsOptional.map { if (it == Unit) null else it }
         val commandArgs = when (args.size) {

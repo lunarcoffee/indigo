@@ -8,6 +8,8 @@ object TrMember : Transformer<Member> {
     private val userMention = """<@!?(\d{18})>""".toRegex()
     private val userId = """\d{18}""".toRegex()
 
+    override val errorMessage = "A user ping, name, or ID was formatted incorrectly or doesn't exist!"
+
     override fun transform(ctx: CommandContext, args: MutableList<String>): Member? {
         val nameOrId = args.firstOrNull() ?: return null
         args.removeAt(0)

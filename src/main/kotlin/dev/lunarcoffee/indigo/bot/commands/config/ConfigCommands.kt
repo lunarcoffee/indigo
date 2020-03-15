@@ -21,9 +21,9 @@ class ConfigCommands {
             |not required to use personal config commands, like `settz` for setting a user's timezone. You must have
             |the administrator permission to use this command.
             |&{Example usage:}
-            |- `setcfgr Moderators`\n
-            |- `setcfgr @Admin`\n
-            |- `setcfgr 510820375022731274`
+            |- `$name Moderators`\n
+            |- `$name @Admin`\n
+            |- `$name 510820375022731274`
         """.trimMargin()
 
         execute(TrRole) { (role) ->
@@ -43,9 +43,9 @@ class ConfigCommands {
             |five characters in length, excluding the backtick (``${'\u200B'}`${'\u200B'}``) and space (` `). You must 
             |have the bot configurer role (see help for `setcfgr`) or the administrator permission to use this command.
             |&{Example usage:}
-            |- `setpfx .. ::`\n
-            |- `setpfx i!`\n
-            |- `setpfx . ! $ &`
+            |- `$name .. ::`\n
+            |- `$name i!`\n
+            |- `$name . ! $ &`
         """.trimMargin()
 
         execute(TrRemaining) { (prefixes) ->
@@ -71,8 +71,8 @@ class ConfigCommands {
             |[this](https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids/) list will probably
             |work.
             |&{Example usage:}
-            |- `settz toronto`\n
-            |- `settz gmt+4`
+            |- `$name toronto`\n
+            |- `$name gmt+4`
         """.trimMargin()
 
         execute(TrTimeZone(true)) { (zone) ->

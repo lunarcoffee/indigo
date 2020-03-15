@@ -1,10 +1,8 @@
 package dev.lunarcoffee.indigo.framework.core.services.paginators
 
 import dev.lunarcoffee.indigo.framework.api.exts.await
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
@@ -22,7 +20,8 @@ object PaginatorReactionListener : ListenerAdapter() {
 
         coroutineScope.launch {
             delay(350)
-            event.reaction.removeReaction(event.user ?: return@launch).await()
+            if (event.channelType != ChannelType.PRIVATE)
+                event.reaction.removeReaction(event.user ?: return@launch).await()
         }
     }
 }

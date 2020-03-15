@@ -2,11 +2,13 @@ package dev.lunarcoffee.indigo.bot.commands.misc
 
 import dev.lunarcoffee.indigo.bot.commands.config.status.SystemStatus
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
+import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.dsl.embed
 import dev.lunarcoffee.indigo.framework.api.exts.await
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrWord
 import kotlin.system.measureNanoTime
 
 @CommandGroup("Misc")
@@ -67,6 +69,27 @@ class MiscCommands {
                     }
                 )
             }
+        }
+    }
+
+    fun invite() = command("invite", "inviteme") {
+        description = """
+            |`$name ["noperms"]`
+            |Gives you a link which you can use to invite me.
+            |This command will give you a link which can be used to invite me to a server. If `noperms` is specified, I
+            |will remove all permissions from the link (i.e. you don't have to let me be able to kick/ban/etc. members
+            |if you do not plan on using that functionality), though it is possible to manually uncheck them as well.
+            |&{Example usage:}
+            |- `$name`\n
+            |- `$name noperms`
+        """.trimMargin()
+
+        execute(TrWord.optional()) { (noPerms) ->
+            val id = bot.jda.selfUser.id
+            val perms = if (noPerms == "noperms") "0" else "1879436358"
+            val url = "https://discordapp.com/api/oauth2/authorize?client_id=$id&permissions=$perms&scope=bot"
+
+            success("You can invite me with <$url>!")
         }
     }
 }

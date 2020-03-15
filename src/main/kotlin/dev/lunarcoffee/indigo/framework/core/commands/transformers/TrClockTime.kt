@@ -4,6 +4,8 @@ import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 import dev.lunarcoffee.indigo.framework.core.std.ClockTime
 
 object TrClockTime : Transformer<ClockTime> {
+    override val errorMessage = "A clock time was formatted incorrectly!"
+
     override fun transform(ctx: CommandContext, args: MutableList<String>): ClockTime? {
         val first = args.firstOrNull() ?: return null
 

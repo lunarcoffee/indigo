@@ -6,6 +6,8 @@ import dev.lunarcoffee.indigo.framework.core.commands.transformers.Transformer
 object TrDiceRoll : Transformer<DiceRoll> {
     private val DICE_ROLL_REGEX = """(\d*)d(\d+)([+-]\d+)?""".toRegex()
 
+    override val errorMessage = "A dice specifier was formatted incorrectly!"
+
     override fun transform(ctx: CommandContext, args: MutableList<String>): DiceRoll? {
         val first = args.firstOrNull() ?: return null
         val match = DICE_ROLL_REGEX.matchEntire(first) ?: return null

@@ -7,6 +7,8 @@ object TrRole : Transformer<Role> {
     private val roleMention = """<@&(\d{18})>""".toRegex()
     private val roleId = """\d{18}""".toRegex()
 
+    override val errorMessage = "A role ping, name, or ID was formatted incorrectly or doesn't exist!"
+
     override fun transform(ctx: CommandContext, args: MutableList<String>): Role? {
         val nameOrId = args.firstOrNull() ?: return null
         args.removeAt(0)

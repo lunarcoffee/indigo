@@ -4,6 +4,7 @@ import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 
 interface Transformer<T> {
     val isOptional get() = false
+    val errorMessage: String
 
     // If this returns [null], the transformation has failed.
     fun transform(ctx: CommandContext, args: MutableList<String>): T?
@@ -12,6 +13,7 @@ interface Transformer<T> {
     fun optional(): Transformer<T?> {
         return object : Transformer<T?> {
             override val isOptional = true
+            override val errorMessage = this@Transformer.errorMessage
 
             override fun transform(ctx: CommandContext, args: MutableList<String>) =
                 this@Transformer.transform(ctx, args)
@@ -22,6 +24,7 @@ interface Transformer<T> {
     fun optional(default: T): Transformer<T> {
         return object : Transformer<T> {
             override val isOptional = true
+            override val errorMessage = this@Transformer.errorMessage
 
             override fun transform(ctx: CommandContext, args: MutableList<String>) =
                 this@Transformer.transform(ctx, args) ?: default

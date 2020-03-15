@@ -25,6 +25,8 @@ dependencies {
 
     implementation("org.litote.kmongo:kmongo-coroutine:3.12.2")
     implementation("club.minnced:discord-webhooks:0.2.0")
+    implementation("com.github.kittinunf.fuel:fuel:2.2.1")
+    implementation("com.github.kittinunf.fuel:fuel-coroutines:2.2.1")
 }
 
 tasks {

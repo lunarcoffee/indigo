@@ -1,12 +1,8 @@
 package dev.lunarcoffee.indigo.framework.core.services.paginators
 
-import dev.lunarcoffee.indigo.framework.api.exts.await
-import dev.lunarcoffee.indigo.framework.api.exts.edit
-import dev.lunarcoffee.indigo.framework.api.exts.react
-import dev.lunarcoffee.indigo.framework.api.exts.send
-import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
+import dev.lunarcoffee.indigo.framework.api.exts.*
 import dev.lunarcoffee.indigo.framework.core.services.paginators.pages.Page
-import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.*
 
 class Paginator(private val pages: List<Page>, val ownerId: String) {
     private var curPage = 0
@@ -15,8 +11,8 @@ class Paginator(private val pages: List<Page>, val ownerId: String) {
     private lateinit var message: Message
     private val messageId get() = message.idLong
 
-    suspend fun start(ctx: CommandContext): Message {
-        message = ctx.send(pages[curPage].asMessage(curPage + 1, totalPages))
+    suspend fun start(channel: MessageChannel): Message {
+        message = channel.send(pages[curPage].asMessage(curPage + 1, totalPages))
         addButtons()
         PaginatorManager.register(messageId, this)
 
@@ -26,8 +22,9 @@ class Paginator(private val pages: List<Page>, val ownerId: String) {
     suspend fun stop() {
         PaginatorManager.unregister(messageId)
 
-        for (button in PaginatorButton.values())
-            message.removeReaction(button.char, message.author).await()
+        if (message.channelType != ChannelType.PRIVATE)
+            for (button in PaginatorButton.values())
+                message.removeReaction(button.char, message.author).await()
     }
 
     suspend fun changePage(button: PaginatorButton) {

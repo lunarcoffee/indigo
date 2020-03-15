@@ -5,6 +5,8 @@ import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 // It might be better to only use this with transformers which are not greedy in consuming arguments. This should
 // definitely not be used with an optional transformer.
 class TrMany<T>(val transformer: Transformer<T>) : Transformer<List<T>> {
+    override val errorMessage = transformer.errorMessage
+
     init {
         if (transformer.isOptional)
             throw IllegalArgumentException()

@@ -22,5 +22,6 @@ class CommandGroupLoader(sourceRoot: String) : BotComponentLoader<Map<String, Li
                     .map { m -> m.invoke(it.second) as Command }
             )
         }
+        .sortedBy { it.first }
         .toMap()
 }

@@ -4,6 +4,7 @@ import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 import dev.lunarcoffee.indigo.framework.core.services.paginators.Paginator
 import dev.lunarcoffee.indigo.framework.core.services.paginators.pages.*
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 class PaginatorBuilderDsl(private val ownerId: String) {
@@ -19,3 +20,5 @@ class PaginatorBuilderDsl(private val ownerId: String) {
 
 fun CommandContext.paginator(init: PaginatorBuilderDsl.() -> Unit) =
     PaginatorBuilderDsl((event as GuildMessageReceivedEvent).author.id).apply(init).build()
+
+fun PrivateChannel.paginator(init: PaginatorBuilderDsl.() -> Unit) = PaginatorBuilderDsl(user.id).apply(init).build()

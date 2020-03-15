@@ -20,4 +20,6 @@ interface CommandContext : HasBot, HasJDA, TextChannel {
         }
         return Unit
     }
+
+    suspend fun <T> checkNull(arg: T, failureMessage: String) = check(arg, failureMessage) { this == null }
 }

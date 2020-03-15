@@ -13,6 +13,8 @@ object TrTime : Transformer<TransformedTime> {
     private val timeStringRegex =
         """(\d{1,8})(${dayS.joinOr()}|${hourS.joinOr()}|${minuteS.joinOr()}|${secondS.joinOr()})""".toRegex()
 
+    override val errorMessage = "A time string was formatted incorrectly!"
+
     override fun transform(ctx: CommandContext, args: MutableList<String>): TransformedTime? {
         val timeStrings = args.takeWhile { it matches timeStringRegex }.ifEmpty { return null }
         args.removeAll(timeStrings)

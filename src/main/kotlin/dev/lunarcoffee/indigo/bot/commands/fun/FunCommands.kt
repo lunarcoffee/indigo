@@ -32,8 +32,8 @@ class FunCommands {
             |This command will flip one coin, if `times` is not specified. If it is, I will flip that many coins, up to
             |1000 coins at most. Each coin should have a 50% chance of being either heads or tails.
             |&{Example usage}:
-            |- `flip`\n
-            |- `flip 3`
+            |- `$name`\n
+            |- `$name 3`
         """.trimMargin()
 
         execute(TrInt.optional(1)) { (times) ->
@@ -46,7 +46,7 @@ class FunCommands {
             val embedTitle = "${Emoji.RADIO_BUTTON}  You flipped **" + if (times == 1)
                 if (heads > 0) "heads**!" else "tails**!"
             else
-                "You flipped **$heads heads** and **${times - heads} tails**!"
+                "$heads heads** and **${times - heads} tails**!"
 
             send(
                 paginator {
@@ -73,9 +73,9 @@ class FunCommands {
             |can wrap it with single or double quotes (so `this text` would become `"this text"`). This also works with
             |other commands.
             |&{Example usage:}
-            |- `pick strawberry chocolate vanilla`\n
-            |- `pick "Andy S." "Carolyn A." "Trent T."`\n
-            |- `pick 2 physics chemistry biology`
+            |- `$name strawberry chocolate vanilla`\n
+            |- `$name "Andy S." "Carolyn A." "Trent T."`\n
+            |- `$name 2 physics chemistry biology`
         """.trimMargin()
 
         execute(TrInt.optional(1), TrRemaining) { (count, options) ->
@@ -104,8 +104,8 @@ class FunCommands {
             |The Magic 8-Ball shall decide your fate.
             |With your `question`, I will take my Magic 8-Ball and tell you what it says.
             |&{Example usage:}
-            |- `8ball will i get into university?`\n
-            |- `8ball is it possible to take 2 days to buy cigarettes?`
+            |- `$name will i get into university?`\n
+            |- `$name is it possible to take 2 days to buy cigarettes?`
         """.trimMargin()
 
         execute(TrRestJoined) { send("${Emoji.POOL_8_BALL}  **${eightBallResponses.random()}**") }
@@ -119,9 +119,9 @@ class FunCommands {
             |are given, I will roll a single `d6`. For every specifier, I can only roll the die at most 100 times, the 
             |die must have at most 1000 sides, and the modifier must be at most +/- 1000.
             |&{Example usage:}
-            |- `roll`\n
-            |- `roll 2d8`\n
-            |- `roll d20+2 3d4-1`
+            |- `$name`\n
+            |- `$name 2d8`\n
+            |- `$name d20+2 3d4-1`
         """.trimMargin()
 
         execute(TrMany(TrDiceRoll).optional(listOf(DiceRoll(1, 6, 0)))) { (dice) ->

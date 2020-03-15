@@ -1,5 +1,7 @@
 package dev.lunarcoffee.indigo.framework.core.commands
 
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.Transformer
+
 interface Command {
     val name: String
     val aliases: List<String>
@@ -8,5 +10,7 @@ interface Command {
     val description: String?
 
     val args: CommandArguments
+    val argTransfomers get() = args.asList().map { it as Transformer<*> }
+
     val execute: CommandBody<CommandArguments>
 }

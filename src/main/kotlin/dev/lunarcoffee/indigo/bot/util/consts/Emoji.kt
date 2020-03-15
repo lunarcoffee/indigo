@@ -10,4 +10,5 @@ object Emoji {
     const val THINKING = "\uD83E\uDD14"
     const val POOL_8_BALL = "\uD83C\uDFB1"
     const val GAME_DIE = "\uD83C\uDFB2"
+    const val DETECTIVE = "\uD83D\uDD75️"
 }

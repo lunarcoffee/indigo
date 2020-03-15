@@ -25,7 +25,7 @@ object GuildSettingsManager {
     }
 
     private suspend fun insertDefault(guildId: String): GuildSettings {
-        val settings = GuildSettings(guildId, listOf("::"), null)
+        val settings = GuildSettings(guildId, listOf(".."), null)
         Database.prefixStore.insertOne(settings)
 
         return settings
