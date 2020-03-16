@@ -7,7 +7,7 @@ import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderManager
 import dev.lunarcoffee.indigo.bot.commands.utility.reminders.remindl.ReminderCancelSender
 import dev.lunarcoffee.indigo.bot.commands.utility.reminders.remindl.ReminderListSender
 import dev.lunarcoffee.indigo.bot.util.*
-import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
+import dev.lunarcoffee.indigo.bot.util.settings.usersettings.UserSettingsManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
@@ -30,7 +30,7 @@ class UtilityCommands {
         """.trimMargin()
 
         execute(TrTime, TrRestJoined.optional("(no message)")) { (delay, message) ->
-            val zone = ZoneManager.getZone(event.author.id)
+            val zone = UserSettingsManager.get(event.author.id).zone
             checkNull(zone, "You must set a timezone with the `settz` command!")
 
             check(message, "Your message can be at most 500 characters!") { length > 500 }
@@ -69,7 +69,7 @@ class UtilityCommands {
         """.trimMargin()
 
         execute(TrClockTime, TrRestJoined.optional("(no message)")) { (clockTime, message) ->
-            val zone = ZoneManager.getZone(event.author.id)
+            val zone = UserSettingsManager.get(event.author.id).zone
             checkNull(zone, "You must set a timezone with the `settz` command!") ?: return@execute
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
 
@@ -89,7 +89,7 @@ class UtilityCommands {
 
     fun reminders() = command("reminders", "remindl") {
         description = """
-            |`$name ["cancel" which]`
+            |`$name ["cancel"] [which]`
             |Shows your reminders or cancels one of them.
             |This command used without arguments (see the first example usage) will list each pending reminder you 
             |have along with a number. If `cancel` and `which` are specified, I will cancel the reminder with number
@@ -99,11 +99,13 @@ class UtilityCommands {
             |- `$name cancel 2`
         """.trimMargin()
 
-        execute(TrRemaining.optional()) { (cancel) ->
-            if (cancel == null)
+        execute(TrWord.optional(), TrInt.optional()) { (cancel, which) ->
+            if (cancel == null && which == null)
                 send(ReminderListSender(event.author.id))
-            else if (cancel.size == 2 && cancel[0] == "cancel" && cancel[1].toIntOrNull() != null)
+            else if (cancel == "cancel" && which != null)
                 send(ReminderCancelSender(event.author.id, cancel[1].toInt()))
+            else
+                failure("That's not right. Type `${invokedPrefix}help ${this@command.name}` for information.")
         }
     }
 

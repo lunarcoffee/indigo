@@ -2,7 +2,7 @@ package dev.lunarcoffee.indigo.bot.listeners.starboard
 
 import dev.lunarcoffee.indigo.bot.util.*
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
-import dev.lunarcoffee.indigo.bot.util.guildsettings.GuildSettingsManager
+import dev.lunarcoffee.indigo.bot.util.settings.guildsettings.GuildSettingsManager
 import dev.lunarcoffee.indigo.framework.api.dsl.embed
 import dev.lunarcoffee.indigo.framework.api.exts.*
 import net.dv8tion.jda.api.entities.*

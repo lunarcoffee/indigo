@@ -1,4 +1,4 @@
-package dev.lunarcoffee.indigo.bot.util.guildsettings
+package dev.lunarcoffee.indigo.bot.util.settings.guildsettings
 
 class GuildSettings(
     val guildId: String,

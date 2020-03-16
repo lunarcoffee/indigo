@@ -1,9 +1,9 @@
 package dev.lunarcoffee.indigo.bot.commands.config
 
 import dev.lunarcoffee.indigo.bot.util.failure
-import dev.lunarcoffee.indigo.bot.util.guildsettings.GuildSettingsManager
+import dev.lunarcoffee.indigo.bot.util.settings.guildsettings.GuildSettingsManager
+import dev.lunarcoffee.indigo.bot.util.settings.usersettings.UserSettingsManager
 import dev.lunarcoffee.indigo.bot.util.success
-import dev.lunarcoffee.indigo.bot.util.zones.ZoneManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
@@ -75,7 +75,7 @@ class ConfigCommands {
         """.trimMargin()
 
         execute(TrTimeZone(true)) { (zone) ->
-            ZoneManager.setZone(event.author.id, zone)
+            UserSettingsManager.update(event.author.id, newZone = zone)
             success("Your time zone has been updated!")
         }
     }

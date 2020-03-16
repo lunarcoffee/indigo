@@ -1,6 +1,6 @@
 package dev.lunarcoffee.indigo.bot.listeners
 
-import dev.lunarcoffee.indigo.bot.util.guildsettings.GuildSettingsManager
+import dev.lunarcoffee.indigo.bot.util.settings.guildsettings.GuildSettingsManager
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.core.commands.ListenerGroup
 import kotlinx.coroutines.runBlocking
