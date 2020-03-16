@@ -1,6 +1,6 @@
 package dev.lunarcoffee.indigo.bot.util
 
-import dev.lunarcoffee.indigo.bot.commands.utility.reminders.Reminder
+import dev.lunarcoffee.indigo.bot.commands.utility.remind.Reminder
 import dev.lunarcoffee.indigo.bot.listeners.starboard.StarboardEntry
 import dev.lunarcoffee.indigo.bot.util.settings.guildsettings.GuildSettings
 import dev.lunarcoffee.indigo.bot.util.settings.usersettings.UserSettings

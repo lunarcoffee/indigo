@@ -1,4 +1,4 @@
-package dev.lunarcoffee.indigo.bot.commands.utility.reminders
+package dev.lunarcoffee.indigo.bot.commands.utility.remind
 
 import java.time.ZonedDateTime
 

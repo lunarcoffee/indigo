@@ -1,6 +1,6 @@
-package dev.lunarcoffee.indigo.bot.commands.utility.reminders.remindl
+package dev.lunarcoffee.indigo.bot.commands.utility.remind.reminders
 
-import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderManager
+import dev.lunarcoffee.indigo.bot.commands.utility.remind.ReminderManager
 import dev.lunarcoffee.indigo.bot.util.failure
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.core.commands.CommandContext

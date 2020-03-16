@@ -1,6 +1,6 @@
 package dev.lunarcoffee.indigo.bot
 
-import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderManager
+import dev.lunarcoffee.indigo.bot.commands.utility.remind.ReminderManager
 import dev.lunarcoffee.indigo.bot.util.settings.guildsettings.GuildSettingsManager
 import dev.lunarcoffee.indigo.framework.api.dsl.bot
 import kotlinx.coroutines.runBlocking

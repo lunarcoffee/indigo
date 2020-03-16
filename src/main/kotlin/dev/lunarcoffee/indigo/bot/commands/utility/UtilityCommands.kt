@@ -2,10 +2,10 @@ package dev.lunarcoffee.indigo.bot.commands.utility
 
 import dev.lunarcoffee.indigo.bot.commands.utility.help.CommandHelpSender
 import dev.lunarcoffee.indigo.bot.commands.utility.help.ListHelpSender
-import dev.lunarcoffee.indigo.bot.commands.utility.reminders.Reminder
-import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderManager
-import dev.lunarcoffee.indigo.bot.commands.utility.reminders.remindl.ReminderCancelSender
-import dev.lunarcoffee.indigo.bot.commands.utility.reminders.remindl.ReminderListSender
+import dev.lunarcoffee.indigo.bot.commands.utility.remind.Reminder
+import dev.lunarcoffee.indigo.bot.commands.utility.remind.ReminderManager
+import dev.lunarcoffee.indigo.bot.commands.utility.remind.reminders.ReminderCancelSender
+import dev.lunarcoffee.indigo.bot.commands.utility.remind.reminders.ReminderListSender
 import dev.lunarcoffee.indigo.bot.util.*
 import dev.lunarcoffee.indigo.bot.util.settings.usersettings.UserSettingsManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
@@ -103,7 +103,7 @@ class UtilityCommands {
             if (cancel == null && which == null)
                 send(ReminderListSender(event.author.id))
             else if (cancel == "cancel" && which != null)
-                send(ReminderCancelSender(event.author.id, cancel[1].toInt()))
+                send(ReminderCancelSender(event.author.id, which))
             else
                 failure("That's not right. Type `${invokedPrefix}help ${this@command.name}` for information.")
         }

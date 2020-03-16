@@ -48,7 +48,10 @@ class RestrictedCommands {
             |- `$name **bold**`
         """.trimMargin()
 
-        execute(TrRestJoined) { (message) -> send(message) }
+        execute(TrRestJoined) { (message) ->
+            checkOwner() ?: return@execute
+            send(message)
+        }
     }
 
     fun sEbd() = command("sebd", "sendembed") {
@@ -64,6 +67,7 @@ class RestrictedCommands {
         """.trimMargin()
 
         execute(TrWord, TrWord.optional(""), TrWord.optional()) { (title, description, color) ->
+            checkOwner() ?: return@execute
             send(
                 embed {
                     this@embed.title = title

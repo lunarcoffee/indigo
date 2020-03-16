@@ -110,9 +110,9 @@ class EmoteCommands {
         """.trimMargin()
 
         execute(TrWord.optional()) { (name) ->
-            check(event.guild.selfMember, "I must be able to manage emotes!") {
-                !hasPermission(Permission.MANAGE_EMOTES)
-            } ?: return@execute
+            checkPermission("You must be able to manage emotes!", Permission.MANAGE_EMOTES) ?: return@execute
+            checkPermission("I must be able to manage emotes!", Permission.MANAGE_EMOTES, event.guild.selfMember)
+                ?: return@execute
 
             val emote = if (name == null) {
                 // Take the first emote in the first message with emotes in the last 100 messages.
