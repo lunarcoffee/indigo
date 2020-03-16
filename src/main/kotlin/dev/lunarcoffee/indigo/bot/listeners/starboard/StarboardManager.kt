@@ -27,18 +27,21 @@ object StarboardManager {
             val entry = StarboardEntry(event.messageId, entryId)
             Database.starboardStore.insertOne(entry)
         } else {
-            val entry = event.channel.retrieveMessageById(oldEntry.entryId).await()
+            val entry = getStarboardChannel(event)?.retrieveMessageById(oldEntry.entryId)?.await() ?: return
             entry.edit(getEntryEmbed(event.getMessage()))
         }
     }
 
     suspend fun removeEntry(event: GenericGuildMessageEvent) {
         val entry = getEntry(event.messageId) ?: return
-        val message = event.channel.retrieveMessageById(entry.entryId).await()
+        val message = getStarboardChannel(event)?.retrieveMessageById(entry.entryId)?.await() ?: return
 
         message.remove()
         Database.starboardStore.deleteOne(StarboardEntry::messageId eq event.messageId)
     }
+
+    private suspend fun getStarboardChannel(event: GenericGuildMessageEvent) =
+        event.guild.getTextChannelById(getStarboard(event.guild.id).channelId!!)
 
     private suspend fun sendEntry(event: GenericGuildMessageEvent): String? {
         val starboard = getStarboard(event.guild.id)
