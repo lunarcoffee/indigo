@@ -26,8 +26,11 @@ class ReminderListSender(private val userId: String) : ContentSender {
 
                         for (reminder in reminderPage) {
                             description += "**#${which++}**: "
-                            description += "`${reminder.message.takeOrEllipsis(40).sanitize()}` at "
-                            description += "${reminder.timeString}\n"
+                            description += "`${reminder.message.takeOrEllipsis(40).sanitize()}`"
+                            description += if (reminder.timeString.isNotEmpty())
+                                " at ${reminder.timeString}\n"
+                            else
+                                " in ${ReminderManager.calculateTimeDiff(reminder)}\n"
                         }
                     }
                 }

@@ -12,6 +12,7 @@ import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
+import java.time.ZoneId
 import java.time.ZonedDateTime
 
 @CommandGroup("Utility")
@@ -30,17 +31,12 @@ class UtilityCommands {
         """.trimMargin()
 
         execute(TrTime, TrRestJoined.optional("(no message)")) { (delay, message) ->
+            check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
+            check(delay, "Your reminder must be in at least 30 seconds!") { totalSeconds < 30 } ?: return@execute
+
             val zone = UserSettingsManager.get(event.author.id).zone
-            checkNull(zone, "You must set a timezone with the `settz` command!")
-
-            check(message, "Your message can be at most 500 characters!") { length > 500 }
-            check(delay, "Your reminder must be in at least 30 seconds!") { totalSeconds < 30 }
-
-            if (checkFailed)
-                return@execute
-
-            val timeAfter = delay.asTimeFromNow(zone!!)
-            val timeString = timeAfter.formatDefault()
+            val timeAfter = delay.asTimeFromNow(zone ?: ZoneId.systemDefault())
+            val timeString = if (zone == null) "" else timeAfter.formatDefault()
 
             val reminder = event
                 .run { Reminder(message, timeAfter, timeString, guild.id, channel.id, messageId, author.id) }

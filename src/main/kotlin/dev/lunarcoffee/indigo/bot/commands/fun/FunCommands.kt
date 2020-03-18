@@ -30,14 +30,15 @@ class FunCommands {
             |`$name [times]`
             |Flips one or more coins.
             |This command will flip one coin, if `times` is not specified. If it is, I will flip that many coins, up to
-            |1000 coins at most. Each coin should have a 50% chance of being either heads or tails.
+            |10000 coins at most. Each coin should have a 50% chance of being either heads or tails.
             |&{Example usage}:
             |- `$name`\n
             |- `$name 3`
         """.trimMargin()
 
         execute(TrInt.optional(1)) { (times) ->
-            check(times, "I can only flip up to 1000 coins!") { this !in 1..1000 }
+            check(times, "I can only flip up to 10000 coins!") { this !in 1..10_000 } ?: return@execute
+
 
             val flips = List(times) { Random.nextBoolean() }
             val coins = flips.map { if (it) "heads" else "tails" }

@@ -6,6 +6,7 @@ import dev.lunarcoffee.indigo.bot.util.sanitize
 import dev.lunarcoffee.indigo.framework.api.dsl.message
 import dev.lunarcoffee.indigo.framework.api.exts.await
 import dev.lunarcoffee.indigo.framework.api.exts.send
+import dev.lunarcoffee.indigo.framework.core.std.TransformedTime
 import kotlinx.coroutines.*
 import net.dv8tion.jda.api.JDA
 import org.litote.kmongo.eq
@@ -33,9 +34,11 @@ object ReminderManager {
     suspend fun cancelReminder(messageId: String) =
         Database.reminderStore.deleteOne(Reminder::messageId eq messageId).deletedCount == 1L
 
+    fun calculateTimeDiff(reminder: Reminder) =
+        TransformedTime(reminder.time.toEpochSecond() - ZonedDateTime.now(reminder.time.zone).toEpochSecond())
+
     private suspend fun scheduleReminder(reminder: Reminder, jda: JDA) {
-        val zoneTimeNow = ZonedDateTime.now(reminder.time.zone).toEpochSecond()
-        val timeDiffSeconds = reminder.time.toEpochSecond() - zoneTimeNow
+        val timeDiffSeconds = calculateTimeDiff(reminder).totalSeconds
 
         coroutineScope.launch {
             delay(timeDiffSeconds * 1_000L)

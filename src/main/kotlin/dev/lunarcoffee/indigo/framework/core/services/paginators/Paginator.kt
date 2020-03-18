@@ -39,11 +39,9 @@ class Paginator(private val pages: List<Page>, val ownerId: String) {
         if (totalPages < 2)
             return
 
-        for (button in PaginatorButton.values()) {
-            if ((button == PaginatorButton.JUMP_PREV || button == PaginatorButton.JUMP_NEXT) && totalPages < 7)
-                continue
-            message.react(button.char)
-        }
+        for (button in PaginatorButton.values())
+            if (button != PaginatorButton.JUMP_PREV && button != PaginatorButton.JUMP_NEXT || totalPages >= 7)
+                message.react(button.char)
     }
 
     private fun getShiftByButton(button: PaginatorButton): Int? {
