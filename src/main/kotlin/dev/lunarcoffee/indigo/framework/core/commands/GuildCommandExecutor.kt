@@ -7,7 +7,7 @@ import kotlinx.coroutines.*
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-// [util] takes a guild ID and returns the valid guildsettings for that guild.
+// [prefix] takes a guild ID and returns the valid prefixes for that guild.
 class GuildCommandExecutor(private val prefix: (String) -> List<String>) : CommandExecutor, ListenerAdapter() {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
