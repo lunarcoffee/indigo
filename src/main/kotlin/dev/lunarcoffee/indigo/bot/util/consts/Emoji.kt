@@ -13,4 +13,5 @@ object Emoji {
     const val DETECTIVE = "\uD83D\uDD75️"
     const val STAR = "\u2B50"
     const val FRAMED_PICTURE = "\uD83D\uDDBC️"
+    const val ABACUS = "\uD83E\uDDEE"
 }
