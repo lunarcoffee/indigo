@@ -1,8 +1,9 @@
-package dev.lunarcoffee.indigo.bot.math
+package dev.lunarcoffee.indigo.bot.commands.math
 
 import dev.lunarcoffee.indigo.framework.api.dsl.command
+import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRestJoined
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
 
 @CommandGroup("Math")
 class MathCommands {
@@ -14,12 +15,14 @@ class MathCommands {
         """.trimMargin()
 
         execute(TrRestJoined) { (exprStr) ->
-            // TODO: timeout execution, integrate/differentiate functions
-
+            // TODO: timeout execution
+            send("This command is currently unavailable.")
         }
     }
 
     fun plot() = command("plot", "graph") {
-
+        execute(TrMany(TrWord)) { (exprStrs) ->
+            send("This command is currently unavailable.")
+        }
     }
 }

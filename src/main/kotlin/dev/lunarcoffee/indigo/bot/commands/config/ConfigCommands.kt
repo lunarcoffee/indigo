@@ -1,9 +1,8 @@
 package dev.lunarcoffee.indigo.bot.commands.config
 
-import dev.lunarcoffee.indigo.bot.util.failure
+import dev.lunarcoffee.indigo.bot.util.*
 import dev.lunarcoffee.indigo.bot.util.settings.guildsettings.GuildSettingsManager
 import dev.lunarcoffee.indigo.bot.util.settings.usersettings.UserSettingsManager
-import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
@@ -132,7 +131,7 @@ class ConfigCommands {
                     GuildSettingsManager.update(guild.id, newStarboard = newStarboard)
                     success("The starboard has been disabled!")
                 }
-                else -> failure("That's not right. Type `${invokedPrefix}help ${this@command.name}` for information.")
+                else -> failureDefault(this@command.name)
             }
         }
     }

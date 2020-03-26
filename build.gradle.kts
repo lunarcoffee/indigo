@@ -1,4 +1,4 @@
-plugins { kotlin("jvm") version "1.3.61" }
+plugins { kotlin("jvm") version "1.3.71" }
 
 group = "dev.lunarcoffee"
 version = "0.1.0"

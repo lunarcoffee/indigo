@@ -8,7 +8,9 @@ import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.dsl.paginator
 import dev.lunarcoffee.indigo.framework.api.exts.*
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
+import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
+import kotlinx.coroutines.future.await
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Icon
 
@@ -36,8 +38,7 @@ class EmoteCommands {
             val authorName = event.guild.getMember(event.author)!!.effectiveName
             val emotes = names
                 .asSequence()
-                .map { it.split('~') }
-                .map { if (it.size > 1) Pair(it[0], it[1].toIntOrNull()) else Pair(it[0], 1) }
+                .map { emoteNameIndexPair(it) }
                 .filter { it.second != null }
                 .mapNotNull { (name, index) -> jda.getEmotesByName(name, true).getOrNull(index!! - 1) }
                 .joinToString(" ") { it.asMention }
@@ -84,8 +85,7 @@ class EmoteCommands {
                     for (emotePage in emotes.chunked(16)) {
                         embedPage {
                             title = "${Emoji.DETECTIVE}  Here are your emotes:"
-                            description = emotePage
-                                .joinToString("\n") { "**${it.name}**: [image link](${it.imageUrl})" }
+                            description = emotePage.joinToString("\n") { "**${it.name}**: [link](${it.imageUrl})" }
                         }
                     }
                 }
@@ -110,32 +110,81 @@ class EmoteCommands {
         """.trimMargin()
 
         execute(TrWord.optional()) { (name) ->
-            checkPermission("You must be able to manage emotes!", Permission.MANAGE_EMOTES) ?: return@execute
-            checkPermission("I must be able to manage emotes!", Permission.MANAGE_EMOTES, event.guild.selfMember)
-                ?: return@execute
+            canManageEmotes() ?: return@execute
 
             val emote = if (name == null) {
                 // Take the first emote in the first message with emotes in the last 100 messages.
-                event.channel.iterableHistory.take(100).find { it.emotes.isNotEmpty() }?.emotes?.get(0).apply {
-                    check(this, "There are no emotes in the last 100 messages!") { this == null } ?: return@execute
-                }
+                val emote = event.channel.iterableHistory.take(100).find { it.emotes.isNotEmpty() }?.emotes?.get(0)
+                check(emote, "There are no emotes in the last 100 messages!") { this == null } ?: return@execute
+                emote
             } else {
-                val part = name.split('~')
-                val (newName, index) = if (part.size > 1) Pair(part[0], part[1].toIntOrNull()) else Pair(part[0], 1)
+                val (newName, index) = emoteNameIndexPair(name)
                 checkNull(index, "You provided an invalid index on the emote name!") ?: return@execute
 
-                jda.getEmotesByName(newName, true).getOrNull(index!! - 1).apply {
-                    checkNull(this, "I can't access that emote!") ?: return@execute
-                }
+                val emote = jda.getEmotesByName(newName, true).getOrNull(index!! - 1)
+                checkNull(this, "I can't access that emote!") ?: return@execute
+                emote
             }
 
             val iconData = runCatching { Fuel.get(emote!!.imageUrl).timeout(3_000).awaitByteArray() }.getOrNull()
             checkNull(iconData, "Network request timed out. Discord or my connection is unstable.") ?: return@execute
 
-            val add = runCatching { event.guild.createEmote(emote!!.name, Icon.from(iconData!!)).await() }.getOrNull()
-            checkNull(add, "Your server is probably be out of emote slots!") ?: return@execute
-
+            tryAddEmote(emote!!.name, Icon.from(iconData!!)) ?: return@execute
             success("Your emote has been added!")
         }
+    }
+
+    fun imageEmote() = command("imageemote", "imgemt") {
+        description = """
+            |`$name [name]`
+            |Gets and automatically adds the last image posted as an emote to your server.
+            |This command will look for an image in the last 100 messages. Note that this image must be uploaded, not
+            |embedded from a link. I will then try to add the image to your server as an emote with the given `name`,
+            |or the file name without the extension if no name is provided.
+            |&{Example usage:}
+            |- `$name`\n
+            |- `$name kekw`
+        """.trimMargin()
+
+        execute(TrWord.optional()) { (name) ->
+            canManageEmotes() ?: return@execute
+
+            val image = event
+                .channel
+                .iterableHistory
+                .take(100)
+                .find { msg -> msg.attachments.any { it.isImage } }
+                ?.attachments
+                ?.find { it.isImage }
+
+            checkNull(image, "I can't find an image in the last 100 messages!") ?: return@execute
+            check(image!!, "That image is too large!") { size >= 262_144 } ?: return@execute
+
+            val emoteName = name ?: image.fileName.substringBeforeLast('.').take(32)
+            check(emoteName, "That emote name is invalid!") { ' ' in this } ?: return@execute
+
+            val imageIcon = image.retrieveAsIcon().await()
+
+            tryAddEmote(emoteName, imageIcon!!) ?: return@execute
+            success("Your emote has been added!")
+        }
+    }
+
+    private suspend fun GuildCommandContext.canManageEmotes(): Unit? {
+        checkPermission("You must be able to manage emotes!", Permission.MANAGE_EMOTES) ?: return null
+        checkPermission("I must be able to manage emotes!", Permission.MANAGE_EMOTES, event.guild.selfMember)
+            ?: return null
+        return Unit
+    }
+
+    // Splits a name like `blobWave~2` into a pair (blobWave, 2).
+    private fun emoteNameIndexPair(name: String): Pair<String, Int?> {
+        val split = name.split('~')
+        return if (split.size > 1) Pair(split[0], split[1].toIntOrNull()) else Pair(split[0], 1)
+    }
+
+    private suspend fun GuildCommandContext.tryAddEmote(name: String, icon: Icon): Unit? {
+        val add = runCatching { event.guild.createEmote(name, icon).await() }.getOrNull()
+        return checkNull(add, "Your server is probably be out of emote slots!")
     }
 }

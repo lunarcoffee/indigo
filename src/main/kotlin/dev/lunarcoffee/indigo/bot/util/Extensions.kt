@@ -5,6 +5,7 @@ import dev.lunarcoffee.indigo.bot.util.consts.Emote
 import dev.lunarcoffee.indigo.framework.api.exts.await
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.bot.Bot
+import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
 import dev.lunarcoffee.indigo.framework.core.std.ClockTime
 import net.dv8tion.jda.api.entities.MessageChannel
@@ -19,6 +20,9 @@ private val TIME_ONLY_FORMATTER = DateTimeFormatter.ofPattern("hh:mm:ss a")
 
 suspend fun MessageChannel.success(message: String) = send("${Emoji.WHITE_CHECK_MARK}  **$message**")
 suspend fun MessageChannel.failure(message: String) = send("${Emote(jda).error.asMention}  **$message**")
+
+suspend fun CommandContext.failureDefault(name: String) =
+    failure("That's not right. Type `${invokedPrefix}help $name` for information.")
 
 fun String.sanitize() = MarkdownSanitizer.sanitize(this)
 fun String.takeOrEllipsis(limit: Int) = if (length > limit) "${take(40)}..." else this

@@ -118,7 +118,7 @@ class FunCommands {
             |Rolls some dice according to some RPG style dice specifiers.
             |This command accepts many `dice specifiers` that look something like `2d8` or `d20+2` or `3d4-1`. If none
             |are given, I will roll a single `d6`. For every specifier, I can only roll the die at most 100 times, the 
-            |die must have at most 1000 sides, and the modifier must be at most +/- 1000.
+            |die must have at most 1000 sides, and the modifier must be at most +/- 1000000.
             |&{Example usage:}
             |- `$name`\n
             |- `$name 2d8`\n
@@ -129,7 +129,7 @@ class FunCommands {
             check(dice, "I can only roll up to 16 dice specifiers!") { size > 16 }
             check(dice, "I can only roll a die at most 100 times!") { any { it.times !in 1..100 } }
             check(dice, "I can only roll a die with 3 to 1000 sides (inclusive)!") { any { it.sides !in 3..1_000 } }
-            check(dice, "I can only apply a modifier of at most +/- 1000.") { any { abs(it.mod) > 1_000_000 } }
+            check(dice, "I can only apply a modifier of at most +/- 1000000.") { any { abs(it.mod) > 1_000_000 } }
 
             if (checkFailed)
                 return@execute
