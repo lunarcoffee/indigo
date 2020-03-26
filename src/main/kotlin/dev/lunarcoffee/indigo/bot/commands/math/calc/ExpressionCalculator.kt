@@ -1,5 +1,6 @@
 package dev.lunarcoffee.indigo.bot.commands.math.calc
 
+import org.apache.commons.math3.special.Gamma
 import kotlin.math.*
 
 class ExpressionCalculator(private val exprStr: String) {
@@ -13,8 +14,7 @@ class ExpressionCalculator(private val exprStr: String) {
             is Expression.Term.Number -> expr.value
             is Expression.Term.UnaryOp.Minus -> -traverse(expr.operand)
             is Expression.Term.UnaryOp.Abs -> traverse(expr.operand).absoluteValue
-            is Expression.Term.UnaryOp.Factorial -> (2..traverse(expr.operand).roundToInt())
-                .fold(1.0) { acc, i -> acc * i }
+            is Expression.Term.UnaryOp.Factorial -> Gamma.gamma(traverse(expr.operand) + 1)
             is Expression.Term.Constant -> constant(expr)
             is Expression.Term.UnaryOp.Function -> function(expr)
             is Expression.BinOp.Plus -> traverse(expr.left) + traverse(expr.right)
@@ -62,6 +62,8 @@ class ExpressionCalculator(private val exprStr: String) {
             "ceil" -> ceil(operand)
             "floor" -> floor(operand)
             "abs" -> abs(operand)
+            "exp" -> exp(operand)
+            "gamma" -> Gamma.gamma(operand)
             "sign" -> sign(operand)
             else -> throw IllegalArgumentException()
         }

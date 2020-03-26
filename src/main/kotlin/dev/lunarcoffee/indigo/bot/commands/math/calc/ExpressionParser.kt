@@ -27,17 +27,10 @@ class ExpressionParser(private val lexer: ExpressionLexer) {
     }
 
     private fun term(): Expression? {
-        return when (val next = lexer.next()) {
-            is Token.Number -> {
-                val number = Expression.Term.Number(next.value)
-                if (lexer.peek() != Token.Bang) {
-                    number
-                } else {
-                    lexer.next()
-                    return Expression.Term.UnaryOp.Factorial(number)
-                }
-            }
+        val term = when (val next = lexer.next()) {
+            is Token.Number -> Expression.Term.Number(next.value)
             is Token.Identifier -> {
+                // Just a name, not a function call.
                 if (lexer.peek() != Token.LParen)
                     return Expression.Term.Constant(next.value)
                 lexer.next()
@@ -48,16 +41,23 @@ class ExpressionParser(private val lexer: ExpressionLexer) {
             }
             Token.BinOp.Minus -> Expression.Term.UnaryOp.Minus(expression(4) ?: return null)
             Token.LParen -> expression().also { expectToken<Token.RParen>() ?: return null }
-            Token.Pipe -> Expression.Term.UnaryOp
-                .Abs(expression().also { expectToken<Token.Pipe>() ?: return null } ?: return null)
+            Token.Pipe -> expression()
+                .also { expectToken<Token.Pipe>() ?: return null }
+                ?.run { Expression.Term.UnaryOp.Abs(this) }
             else -> null
+        }
+
+        // Factorial operator?
+        return if (lexer.peek() != Token.Bang) {
+            term
+        } else {
+            lexer.next()
+            return Expression.Term.UnaryOp.Factorial(term ?: return null)
         }
     }
 
     private inline fun <reified T : Token> expectToken(): T? {
         val token = lexer.next()
-        if (token !is T)
-            return null
-        return token
+        return if (token is T) token else null
     }
 }

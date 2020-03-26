@@ -27,6 +27,7 @@ dependencies {
     implementation("club.minnced:discord-webhooks:0.2.0")
     implementation("com.github.kittinunf.fuel:fuel:2.2.1")
     implementation("com.github.kittinunf.fuel:fuel-coroutines:2.2.1")
+    implementation("org.apache.commons:commons-math3:3.6.1")
 }
 
 tasks {
