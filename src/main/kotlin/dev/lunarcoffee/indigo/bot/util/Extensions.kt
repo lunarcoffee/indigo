@@ -36,11 +36,17 @@ fun ClockTime.toZoned(zone: ZoneId) = ZonedDateTime
 
 fun ZonedDateTime.formatDefault() = format(DEFAULT_FORMATTER)!!
 fun ZonedDateTime.formatTimeOnly() = format(TIME_ONLY_FORMATTER)!!
-
 fun LocalDateTime.formatDefault() = format(DEFAULT_FORMATTER)!!
 fun LocalDateTime.formatTimeOnly() = format(TIME_ONLY_FORMATTER)!!
+fun OffsetDateTime.formatDefault() = format(DEFAULT_FORMATTER)!!
+fun OffsetDateTime.formatTimeOnly() = format(TIME_ONLY_FORMATTER)!!
 
+// Useful for converting various special cases into human readable strings.
 fun List<*>.ifEmptyNone() = ifEmpty { "(none)" }.toString()
+fun String.ifEmptyNone() = ifEmpty { "(none)" }
+fun <T> T?.ifNullNone() = this?.toString() ?: "(none)"
+fun String?.ifNullNoneElseLink() = this?.run { "[link]($this)" }.ifNullNone()
+fun Boolean.toYesNo() = if (this) "yes" else "no"
 
 fun GuildCommandContext.isAuthorOwner(bot: Bot) = event.author.id == bot.config["ownerId"]!!
 

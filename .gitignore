@@ -3,5 +3,5 @@
 /build
 /gradle
 *.iml
-/src/main/resources/config.yaml
+/src/main/resources/
 .reloadables
