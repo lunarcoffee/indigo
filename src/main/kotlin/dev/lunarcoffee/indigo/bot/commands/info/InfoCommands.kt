@@ -1,5 +1,6 @@
 package dev.lunarcoffee.indigo.bot.commands.info
 
+import com.merakianalytics.orianna.datapipeline.riotapi.RiotAPI
 import dev.lunarcoffee.indigo.bot.util.*
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
 import dev.lunarcoffee.indigo.framework.api.dsl.*
@@ -45,7 +46,7 @@ class InfoCommands {
                         |**Displayed separately**: ${role.isHoisted.toYesNo()}
                         |**Mentionable**: ${role.isMentionable.toYesNo()}
                         |**Mention**: ${role.asMention}
-                        |**Time created**: ${role.timeCreated}
+                        |**Time created**: ${role.timeCreated.formatDefault()}
                         |**Managed**: ${role.isManaged}
                         |**Color**: #${role.colorRaw.toString(16).toUpperCase()}
                         |**Position**: ${role.position.takeIf { it > 0 }.ifNullNone()}

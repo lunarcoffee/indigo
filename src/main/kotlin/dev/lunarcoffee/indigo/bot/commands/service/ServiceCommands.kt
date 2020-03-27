@@ -1,13 +1,14 @@
 package dev.lunarcoffee.indigo.bot.commands.service
 
+import dev.lunarcoffee.indigo.bot.commands.service.lol.LeagueChampionInfoSender
+import dev.lunarcoffee.indigo.bot.commands.service.lol.LeagueItemInfoSender
 import dev.lunarcoffee.indigo.bot.commands.service.xkcd.XkcdComicRequester
 import dev.lunarcoffee.indigo.bot.commands.service.xkcd.XkcdComicSender
 import dev.lunarcoffee.indigo.bot.util.failureDefault
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrInt
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrWord
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
 import kotlin.random.Random
 
 @CommandGroup("Service")
@@ -15,7 +16,7 @@ class ServiceCommands {
     fun xkcd() = command("xkcd") {
         description = """
             |`$name [number|"r"|"random"]`
-            |Gets you the latest, a specific, or random xkcd comic.
+            |Shows you the latest, a specific, or a random xkcd comic.
             |This command will give you the latest xkcd comic if no arguments are given (first example usage). If a
             |`number` is given, it will try to get the comic with that number. If `r` or `random` is given instead, I
             |will get you a random comic (including "comic" 404).
@@ -38,6 +39,34 @@ class ServiceCommands {
                 }
             }
             send(XkcdComicSender(which))
+        }
+    }
+
+    fun lol() = command("lol", "lolinfo") {
+        description = """
+            |`$name <"champion"|"item"> <champion name|item name>`
+            |Shows information about a given champion or item in League of Legends.
+            |This command will give you detailed information on a champion or item from League of Legends. If the first
+            |argument is `champion`, the next should be the `champion name`. If the first argument is `item`, the next
+            |should be the `item name`. These names do not have to be exact (no need to have perfect capitalization or
+            |spelling); if they are close enough, I can take a shot at guessing what champion or item you want.
+            |&{Example usage:}
+            |- `$name champion mordekaiser`\n
+            |- `$name item zhonyas hourglass`
+        """.trimMargin()
+
+        execute(TrWord, TrRestJoined) { (action, championOrItemName) ->
+            val correctedName = championOrItemName.split(' ').joinToString(" ") { it.toLowerCase().capitalize() }
+            send(
+                when (action) {
+                    "champion" -> LeagueChampionInfoSender(listOf(championOrItemName, correctedName))
+                    "item" -> LeagueItemInfoSender(listOf(championOrItemName, correctedName))
+                    else -> {
+                        failureDefault(this@command.name)
+                        return@execute
+                    }
+                }
+            )
         }
     }
 }

@@ -8,12 +8,14 @@ import dev.lunarcoffee.indigo.framework.core.bot.Bot
 import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
 import dev.lunarcoffee.indigo.framework.core.std.ClockTime
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.events.message.guild.GenericGuildMessageEvent
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import kotlin.math.min
 
 private val DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/uuuu hh:mm:ss a")
 private val TIME_ONLY_FORMATTER = DateTimeFormatter.ofPattern("hh:mm:ss a")
@@ -41,7 +43,6 @@ fun LocalDateTime.formatTimeOnly() = format(TIME_ONLY_FORMATTER)!!
 fun OffsetDateTime.formatDefault() = format(DEFAULT_FORMATTER)!!
 fun OffsetDateTime.formatTimeOnly() = format(TIME_ONLY_FORMATTER)!!
 
-// Useful for converting various special cases into human readable strings.
 fun List<*>.ifEmptyNone() = ifEmpty { "(none)" }.toString()
 fun String.ifEmptyNone() = ifEmpty { "(none)" }
 fun <T> T?.ifNullNone() = this?.toString() ?: "(none)"
@@ -50,4 +51,22 @@ fun Boolean.toYesNo() = if (this) "yes" else "no"
 
 fun GuildCommandContext.isAuthorOwner(bot: Bot) = event.author.id == bot.config["ownerId"]!!
 
-suspend fun GenericGuildMessageEvent.getMessage() = channel.retrieveMessageById(messageId).await()
+suspend fun GenericGuildMessageEvent.getMessage(): Message = channel.retrieveMessageById(messageId).await()
+
+fun String.distance(other: String): Int {
+    val lhsLength = length
+    val rhsLength = other.length
+
+    var cost = Array(lhsLength) { it }
+    var newCost = Array(lhsLength) { 0 }
+
+    for (i in 1 until rhsLength) {
+        newCost[0] = i
+        for (j in 1 until lhsLength) {
+            val match = if (this[j - 1] == other[i - 1]) 0 else 1
+            newCost[j] = min(min(cost[j] + 1, newCost[j - 1] + 1), cost[j - 1] + match)
+        }
+        cost = newCost.also { newCost = cost }
+    }
+    return cost.last()
+}

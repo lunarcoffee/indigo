@@ -16,4 +16,5 @@ object Emoji {
     const val ABACUS = "\uD83E\uDDEE"
     const val CHART_UPWARDS_TREND = "\uD83D\uDCC8"
     const val MAG = "\uD83D\uDD0D"
+    const val BOOK = "\uD83D\uDCD6"
 }
