@@ -23,11 +23,15 @@ class LeagueChampionInfoSender(private val championNames: List<String>) : Conten
         ctx.send(
             ctx.paginator {
                 val embedTitle = "${Emoji.BOOK}  Info on **${champion!!.name}**, ${champion.title}:"
+
+                // Page with lore.
                 embedPage {
                     title = embedTitle
                     description = champion.lore
                     thumbnail = champion.image.url
                 }
+
+                // Page with champion base stats.
                 embedPage {
                     title = embedTitle
                     thumbnail = champion.image.url
@@ -47,6 +51,8 @@ class LeagueChampionInfoSender(private val championNames: List<String>) : Conten
                         |**Crit chance**: ${stats.criticalStrikeChance}% (+${stats.criticalStrikeChancePerLevel}%)
                     """.trimMargin()
                 }
+
+                // Page with passive and spells.
                 embedPage {
                     title = embedTitle
                     thumbnail = champion.image.url
@@ -62,6 +68,15 @@ class LeagueChampionInfoSender(private val championNames: List<String>) : Conten
                             """.trimMargin()
                         }
                     }
+                }
+
+                // Page with tips for playing as and against the champion.
+                embedPage {
+                    title = embedTitle
+                    thumbnail = champion.image.url
+
+                    field("Tips for playing as ${champion.name}", champion.allyTips.joinToString("\n- ", "- "))
+                    field("Tips for playing against ${champion.name}", champion.enemyTips.joinToString("\n- ", "- "))
                 }
             }
         )

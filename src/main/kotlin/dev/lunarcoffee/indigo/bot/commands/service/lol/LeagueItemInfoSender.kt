@@ -34,6 +34,7 @@ class LeagueItemInfoSender(private val itemNames: List<String>) : ContentSender 
                     |**Builds into**: ${item.buildsInto?.map { it.name }.ifNullNone()}
                 """.trimMargin()
 
+                // Fields for item stats, passives, actives, auras, and consumables.
                 for ((fieldName, entries) in item.description.parseItemDescription())
                     field(fieldName, entries.joinToString("\n"))
             }
