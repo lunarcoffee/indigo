@@ -66,7 +66,7 @@ class RestrictedCommands {
             |- `$name "the title"`
         """.trimMargin()
 
-        execute(TrWord, TrWord.optional(""), TrWord.optional()) { (title, description, color) ->
+        execute(TrWord, TrWord.optional { "" }, TrWord.optional()) { (title, description, color) ->
             checkOwner() ?: return@execute
             send(
                 embed {

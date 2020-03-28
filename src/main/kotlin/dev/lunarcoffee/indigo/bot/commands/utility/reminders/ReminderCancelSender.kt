@@ -1,4 +1,4 @@
-package dev.lunarcoffee.indigo.bot.commands.utility.remind.reminders
+package dev.lunarcoffee.indigo.bot.commands.utility.reminders
 
 import dev.lunarcoffee.indigo.bot.commands.utility.remind.ReminderManager
 import dev.lunarcoffee.indigo.bot.util.failure

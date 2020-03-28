@@ -1,15 +1,15 @@
 package dev.lunarcoffee.indigo.framework.core.commands.transformers
 
-import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
+import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
 import net.dv8tion.jda.api.entities.Role
 
-object TrRole : Transformer<Role> {
+object TrRole : Transformer<Role, GuildCommandContext> {
     private val roleMention = """<@&(\d{18})>""".toRegex()
     private val roleId = """\d{18}""".toRegex()
 
     override val errorMessage = "A role ping, name, or ID was formatted incorrectly or doesn't exist!"
 
-    override fun transform(ctx: CommandContext, args: MutableList<String>): Role? {
+    override fun transform(ctx: GuildCommandContext, args: MutableList<String>): Role? {
         val nameOrId = args.firstOrNull() ?: return null
         val mentionMatch = roleMention.matchEntire(nameOrId)
 

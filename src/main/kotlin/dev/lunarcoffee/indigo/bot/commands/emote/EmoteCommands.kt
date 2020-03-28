@@ -61,7 +61,7 @@ class EmoteCommands {
             |- `$name 500`
         """.trimMargin()
 
-        execute(TrInt.optional(100)) { (limit) ->
+        execute(TrInt.optional { 100 }) { (limit) ->
             check(limit, "I can only scan up to the last 1000 message!") { this !in 1..1_000 } ?: return@execute
 
             val emotes = event

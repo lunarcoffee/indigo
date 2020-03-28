@@ -1,24 +1,74 @@
 package dev.lunarcoffee.indigo.bot.commands.info
 
-import com.merakianalytics.orianna.datapipeline.riotapi.RiotAPI
+import dev.lunarcoffee.indigo.bot.commands.info.channelinfo.TextChannelInfoSender
+import dev.lunarcoffee.indigo.bot.commands.info.channelinfo.VoiceChannelInfoSender
+import dev.lunarcoffee.indigo.bot.commands.info.serverinfo.ServerInfoSender
+import dev.lunarcoffee.indigo.bot.commands.info.userinfo.UserInfoSender
 import dev.lunarcoffee.indigo.bot.util.*
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
-import dev.lunarcoffee.indigo.framework.api.dsl.*
+import dev.lunarcoffee.indigo.framework.api.dsl.command
+import dev.lunarcoffee.indigo.framework.api.dsl.embed
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrMember
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRole
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.VoiceChannel
 
 @CommandGroup("Info")
 class InfoCommands {
-    fun channelInfo() = command("channelinfo", "ci") {
+    fun userInfo() = command("userinfo", "memberinfo", "ui", "mi") {
         description = """
-            
+            |`$name [user name/id/ping]`
+            |Shows detailed information about a given member of this server.
+            |This command displays the nickname, ID, server join time, account creation time, current activity, status,
+            |ping, server boost start time, color, roles, permissions, and avatar ID of the given user. It also shows
+            |whether or not the account belongs to a bot and if it is boosting this server. If no user is specified, I
+            |will show information about you.
+            |&{Example usage:}
+            |- `$name`\n
+            |- `$name JohnB24`
         """.trimMargin()
 
-        execute {
-            // TODO: TrChannel
-            send("This command is not available.")
+        execute(TrMember.optional { event.member!! }) { (member) -> send(UserInfoSender(member)) }
+    }
+
+    fun serverInfo() = command("serverinfo", "si") {
+        description = """
+            |`$name`
+            |Shows detailed information about this server.
+            |This command displays the ID, member count, channel counts (total, text, and voice), category count, NSFW
+            |filter message, creation time, region, features, boost tier, booster count, boost count, description,
+            |owner, verification level, banner art and ID, vanity invite URL code, splash art and ID, MFA requirement, 
+            |roles, and permissions given by the public role of this server.
+        """.trimMargin()
+
+        execute { send(ServerInfoSender(event.guild)) }
+    }
+
+    fun channelInfo() = command("channelinfo", "ci") {
+        description = """
+            |`$name [text or voice channel name/id/ping]`
+            |Shows detailed information about a given text or voice channel of this server.
+            |This command displays the ID, topic, slowmode, NSFW content status, mention, creation time, category, and
+            |position of a text channel, or the ID, bitrate (in kb/s), user limit, creation time, category, and
+            |position of a voice channel. If no channel is specified, the current channel is used.
+            |&{Example usage:}
+            |- `$name`\n
+            |- `$name #general`\n
+            |- `$name generalVoice`
+        """.trimMargin()
+
+        execute(TrGuildChannel.optional { event.channel }) { (channel) ->
+            send(
+                when (channel) {
+                    is TextChannel -> TextChannelInfoSender(channel)
+                    is VoiceChannel -> VoiceChannelInfoSender(channel)
+                    else -> {
+                        failureDefault(this@command.name)
+                        return@execute
+                    }
+                }
+            )
         }
     }
 
@@ -35,11 +85,10 @@ class InfoCommands {
             |- `$name Member`
         """.trimMargin()
 
-        execute(TrRole.optional()) { (optionalRole) ->
-            val role = optionalRole ?: event.guild.publicRole
+        execute(TrRole.optional { event.guild.publicRole }) { (role) ->
             send(
                 embed {
-                    val titleEnd = optionalRole?.run { "role **${role.name.sanitize()}" } ?: "the **public role"
+                    val titleEnd = if (role.isPublicRole) "the **public role" else "role **${role.name.sanitize()}"
                     title = "${Emoji.MAG}  Info on $titleEnd**:"
                     description = """
                         |**Role ID**: ${role.id}
@@ -49,119 +98,10 @@ class InfoCommands {
                         |**Time created**: ${role.timeCreated.formatDefault()}
                         |**Managed**: ${role.isManaged}
                         |**Color**: #${role.colorRaw.toString(16).toUpperCase()}
-                        |**Position**: ${role.position.takeIf { it > 0 }.ifNullNone()}
+                        |**Position**: ${role.position.takeIf { it >= 0 }?.plus(1).ifNullNone()}
                         |**Members with role**: ${event.guild.getMembersWithRoles(role).size}
                         |**Permissions**: ${role.permissions.map { "`$it`" }.ifEmptyNone()}
                     """.trimMargin()
-                }
-            )
-        }
-    }
-
-    fun serverInfo() = command("serverinfo", "si") {
-        description = """
-            |`$name`
-            |Shows detailed information about this server.
-            |This command displays the ID, member count, channel counts (total, text, and voice), category count, NSFW
-            |filter message, creation time, region, features, boost tier, booster count, boost count, description,
-            |owner, verification level, banner art and ID, vanity invite URL code, splash art and ID, MFA requirement, 
-            |roles, and permissions given by the public role of this server.
-        """.trimMargin()
-
-        execute {
-            val guild = event.guild
-            send(
-                paginator {
-                    embedPage {
-                        title = "${Emoji.MAG}  Info on server **${guild.name.sanitize()}**:"
-                        description = """
-                            |**Server ID**: ${guild.id}
-                            |**Total members**: ${guild.memberCount}
-                            |**Total channels**: ${guild.channels.size}
-                            |**Text channels**: ${guild.textChannels.size}
-                            |**Voice channels**: ${guild.voiceChannels.size}
-                            |**Total categories**: ${guild.categories.size}
-                            |**NSFW filter**: ${guild.explicitContentLevel.description}
-                            |**Region**: ${guild.region.getName()}
-                            |**Time created**: ${guild.timeCreated.formatDefault()}
-                            |**Features**: ${guild.features.map { "`$it`" }.ifEmptyNone()}
-                        """.trimMargin()
-                        thumbnail = guild.iconUrl
-                    }
-                    embedPage {
-                        title = "${Emoji.MAG}  Info on server **${guild.name.sanitize()}**:"
-                        description = """
-                            |**Boost tier**: ${guild.boostTier.key.takeIf { it > 0 }.ifNullNone()}
-                            |**Boosters**: ${guild.boosters.size}
-                            |**Boost count**: ${guild.boostCount}
-                            |**Description**: ${guild.description.ifNullNone()}
-                            |**Owner**: ${guild.owner?.asMention.ifNullNone()}
-                            |**Verification**: ${guild.verificationLevel.name.toLowerCase().replace('_', ' ')}
-                            |**Banner art**: ${guild.bannerUrl.ifNullNoneElseLink()}
-                            |**Banner ID**: ${guild.bannerId.ifNullNone()}
-                            |**Vanity code**: ${guild.vanityCode.ifNullNone()}
-                            |**Splash art**: ${guild.splashUrl.ifNullNoneElseLink()}
-                        """.trimMargin()
-                        thumbnail = guild.iconUrl
-                    }
-                    embedPage {
-                        title = "${Emoji.MAG}  Info on server **${guild.name.sanitize()}**:"
-                        description = """
-                            |**Splash ID**: ${guild.splashId.ifNullNone()}
-                            |**MFA required**: ${(guild.requiredMFALevel.key == 1).toYesNo()}
-                            |**Roles**: ${guild.roles.map { it.asMention }.ifEmptyNone()}
-                            |**Public permissions**: ${guild.publicRole.permissions.map { "`${it}`" }.ifEmptyNone()}
-                        """.trimMargin()
-                        thumbnail = guild.iconUrl
-                    }
-                }
-            )
-        }
-    }
-
-    fun userInfo() = command("userinfo", "memberinfo", "ui", "mi") {
-        description = """
-            |`$name [user name/id/ping]`
-            |Shows detailed information about a given member of this server.
-            |This command displays the nickname, ID, server join time, account creation time, current activity, status,
-            |ping, server boost start time, color, roles, permissions, and avatar ID of the given user. It also shows
-            |whether or not the account belongs to a bot and if it is boosting this server. If no user is specified, I
-            |will show information about you.
-            |&{Example usage:}
-            |- `$name`\n
-            |- `$name JohnB24`
-        """.trimMargin()
-
-        execute(TrMember.optional()) { (optionalMember) ->
-            val member = optionalMember ?: event.member!!
-            send(
-                paginator {
-                    embedPage {
-                        title = "${Emoji.MAG}  Info on member **${member.user.asTag.sanitize()}**:"
-                        description = """
-                            |**Nickname**: ${member.nickname.ifNullNone()}
-                            |**User ID**: ${member.id}
-                            |**Bot account**: ${member.user.isBot.toYesNo()}
-                            |**Time joined**: ${member.timeJoined.formatDefault()}
-                            |**Time account created**: ${member.timeCreated.formatDefault()}
-                            |**Activity**: ${member.activities.firstOrNull()?.name.ifNullNone()}
-                            |**Status**: ${member.onlineStatus.key}
-                            |**Mention**: ${member.asMention}
-                            |**Boosting server**: ${(member.timeBoosted != null).toYesNo()}
-                            |**Time boosted**: ${member.timeBoosted.ifNullNone()}
-                        """.trimMargin()
-                        thumbnail = member.user.avatarUrl
-                    }
-                    embedPage {
-                        title = "${Emoji.MAG}  Info on member **${member.user.asTag.sanitize()}**:"
-                        description = """
-                            |**Color**: #${member.colorRaw.toString(16).toUpperCase()}
-                            |**Roles**: ${member.roles.map { it.asMention }.ifEmptyNone()}
-                            |**Permissions**: ${member.permissions.map { "`$it`" }.ifEmptyNone()}
-                            |**Avatar ID**: ${member.user.avatarId}
-                        """.trimMargin()
-                        thumbnail = member.user.avatarUrl
-                    }
                 }
             )
         }

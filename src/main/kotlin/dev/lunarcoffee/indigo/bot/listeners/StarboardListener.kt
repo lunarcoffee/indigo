@@ -57,7 +57,7 @@ class StarboardListener : ListenerAdapter() {
     }
 
     private suspend fun starboardEnabledOrNull(event: GenericGuildMessageEvent) =
-        StarboardManager.getStarboard(event.guild.id).enabled.takeIf { true }
+        StarboardManager.getStarboard(event.guild.id).enabled.takeIf { it }
 
     private fun isStarEmoji(reaction: MessageReaction.ReactionEmote) = reaction.isEmoji && reaction.emoji == Emoji.STAR
 }

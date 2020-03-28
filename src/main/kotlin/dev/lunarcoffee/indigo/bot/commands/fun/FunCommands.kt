@@ -4,15 +4,10 @@ import dev.lunarcoffee.indigo.bot.commands.`fun`.roll.DiceRoll
 import dev.lunarcoffee.indigo.bot.commands.`fun`.roll.TrDiceRoll
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
 import dev.lunarcoffee.indigo.bot.util.ifEmptyNone
-import dev.lunarcoffee.indigo.framework.api.dsl.command
-import dev.lunarcoffee.indigo.framework.api.dsl.embed
-import dev.lunarcoffee.indigo.framework.api.dsl.paginator
+import dev.lunarcoffee.indigo.framework.api.dsl.*
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrInt
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrMany
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRemaining
-import dev.lunarcoffee.indigo.framework.core.commands.transformers.TrRestJoined
+import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -36,9 +31,8 @@ class FunCommands {
             |- `$name 3`
         """.trimMargin()
 
-        execute(TrInt.optional(1)) { (times) ->
+        execute(TrInt.optional { 1 }) { (times) ->
             check(times, "I can only flip up to 10000 coins!") { this !in 1..10_000 } ?: return@execute
-
 
             val flips = List(times) { Random.nextBoolean() }
             val coins = flips.map { if (it) "heads" else "tails" }
@@ -79,7 +73,7 @@ class FunCommands {
             |- `$name 2 physics chemistry biology`
         """.trimMargin()
 
-        execute(TrInt.optional(1), TrRemaining) { (count, options) ->
+        execute(TrInt.optional { 1 }, TrRemaining) { (count, options) ->
             val mutableOptions = options.toMutableList()
 
             check(count, "I don't have enough options to pick from!") { this > mutableOptions.size } ?: return@execute
@@ -125,7 +119,7 @@ class FunCommands {
             |- `$name d20+2 3d4-1`
         """.trimMargin()
 
-        execute(TrMany(TrDiceRoll).optional(listOf(DiceRoll(1, 6, 0)))) { (dice) ->
+        execute(TrMany(TrDiceRoll).optional { listOf(DiceRoll(1, 6, 0)) }) { (dice) ->
             check(dice, "I can only roll up to 16 dice specifiers!") { size > 16 }
             check(dice, "I can only roll a die at most 100 times!") { any { it.times !in 1..100 } }
             check(dice, "I can only roll a die with 3 to 1000 sides (inclusive)!") { any { it.sides !in 3..1_000 } }

@@ -3,7 +3,7 @@ package dev.lunarcoffee.indigo.framework.core.commands.transformers
 import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 import dev.lunarcoffee.indigo.framework.core.std.TransformedTime
 
-object TrTime : Transformer<TransformedTime> {
+object TrTime : Transformer<TransformedTime, CommandContext> {
     // Accepted suffixes for time values in a time string.
     private val dayS = listOf("d", "day", "days")
     private val hourS = listOf("h", "hour", "hours")

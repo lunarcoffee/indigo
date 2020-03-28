@@ -2,7 +2,6 @@ package dev.lunarcoffee.indigo.bot.commands.service.lol
 
 import com.merakianalytics.orianna.types.common.Region
 import com.merakianalytics.orianna.types.core.staticdata.Item
-import com.merakianalytics.orianna.types.core.staticdata.Items
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
 import dev.lunarcoffee.indigo.bot.util.distance
 import dev.lunarcoffee.indigo.bot.util.ifNullNone
@@ -18,7 +17,7 @@ class LeagueItemInfoSender(private val itemNames: List<String>) : ContentSender 
         val item = itemNames
             .map { Item.named(it).withRegion(Region.NORTH_AMERICA).get() }
             .firstOrNull { it.stats != null }
-            ?: allItems.firstOrNull { item -> itemNames.any { it.distance(item.name) < 4 } }
+            ?: LeagueInfo.allItems.firstOrNull { item -> itemNames.any { it.distance(item.name) < 4 } }
         ctx.checkNull(item, "That item does not exist!") ?: return
 
         ctx.send(
@@ -47,14 +46,14 @@ class LeagueItemInfoSender(private val itemNames: List<String>) : ContentSender 
             ?.groupValues
             ?.get(1)
             ?.split("<br>")
-            ?.map { it.replace(tagRegex, "") }
+            ?.map { it.replace(LeagueInfo.tagRegex, "") }
             ?: emptyList()
 
         // This terrible mess removes tags which we do not parse here (unique, aura, consumable). First, the tags to
         // keep are substituted to something else that does not look like a tag. Next, all tags are removed, except for
         // `<br>` elements which are replaced by a space. Finally, the first substitution is undone.
         var newStr = substitutions.fold(this) { acc, (before, after) -> acc.replace(before, after) }
-        newStr = newStr.replace(lineBreakRegex, " ").replace(tagRegex, "")
+        newStr = newStr.replace(LeagueInfo.lineBreakRegex, " ").replace(LeagueInfo.tagRegex, "")
         newStr = substitutions.fold(newStr) { acc, (before, after) -> acc.replace(after, before) }
 
         val actives = activeRegex.findAll(newStr).map { "**${it.groupValues[2]}**:${it.groupValues[4]}" }
@@ -76,16 +75,11 @@ class LeagueItemInfoSender(private val itemNames: List<String>) : ContentSender 
             .flatMap { listOf(it, "</${it.drop(1)}") }
             .map { it to it.replace("<", "{").replace(">", "}") }
 
-        private val lineBreakRegex = "(<br>)+".toRegex()
-        private val tagRegex = "<[^>]+>".toRegex()
-
         private val statRegex = "<stats>(.+)</stats>".toRegex()
         private val activeRegex = "<(unique|active)>(UNIQUE Active[^:]*):</(unique|active)>([^<]+)(<|$)".toRegex()
         private val auraRegex = "<aura>([^:]+):</aura>([^<]+)(<|$)".toRegex()
         private val consumableRegex = "<consumable>([^:]+):</consumable>([^<]+)(<|$)".toRegex()
         private val passiveRegex = "<(unique|passive)>(UNIQUE Passive[^:]*):</(unique|passive)>([^<]+)(<|$)"
             .toRegex()
-
-        private val allItems = Items.withRegion(Region.NORTH_AMERICA).get()
     }
 }

@@ -19,20 +19,24 @@ class GuildCommandDSL(override val name: String, override val aliases: List<Stri
         execute = body as CommandBody<CommandArguments>
     }
 
-    fun <A> execute(a: Transformer<A>, body: GuildCommandBody<Arg1<A>>) {
+    fun <A> execute(a: Transformer<A, out CommandContext>, body: GuildCommandBody<Arg1<A>>) {
         args = Arg1(a)
         execute = body as CommandBody<CommandArguments>
     }
 
-    fun <A, B> execute(a: Transformer<A>, b: Transformer<B>, body: GuildCommandBody<Arg2<A, B>>) {
+    fun <A, B> execute(
+        a: Transformer<A, out CommandContext>,
+        b: Transformer<B, out CommandContext>,
+        body: GuildCommandBody<Arg2<A, B>>
+    ) {
         args = Arg2(a, b)
         execute = body as CommandBody<CommandArguments>
     }
 
     fun <A, B, C> execute(
-        a: Transformer<A>,
-        b: Transformer<B>,
-        c: Transformer<C>,
+        a: Transformer<A, out CommandContext>,
+        b: Transformer<B, out CommandContext>,
+        c: Transformer<C, out CommandContext>,
         body: GuildCommandBody<Arg3<A, B, C>>
     ) {
         args = Arg3(a, b, c)
@@ -40,10 +44,10 @@ class GuildCommandDSL(override val name: String, override val aliases: List<Stri
     }
 
     fun <A, B, C, D> execute(
-        a: Transformer<A>,
-        b: Transformer<B>,
-        c: Transformer<C>,
-        d: Transformer<D>,
+        a: Transformer<A, out CommandContext>,
+        b: Transformer<B, out CommandContext>,
+        c: Transformer<C, out CommandContext>,
+        d: Transformer<D, out CommandContext>,
         body: GuildCommandBody<Arg4<A, B, C, D>>
     ) {
         args = Arg4(a, b, c, d)
@@ -51,18 +55,18 @@ class GuildCommandDSL(override val name: String, override val aliases: List<Stri
     }
 
     fun <A, B, C, D, E> execute(
-        a: Transformer<A>,
-        b: Transformer<B>,
-        c: Transformer<C>,
-        d: Transformer<D>,
-        e: Transformer<E>,
+        a: Transformer<A, out CommandContext>,
+        b: Transformer<B, out CommandContext>,
+        c: Transformer<C, out CommandContext>,
+        d: Transformer<D, out CommandContext>,
+        e: Transformer<E, out CommandContext>,
         body: GuildCommandBody<Arg5<A, B, C, D, E>>
     ) {
         args = Arg5(a, b, c, d, e)
         execute = body as CommandBody<CommandArguments>
     }
 
-    fun executeUncheckedArgs(vararg arg: Transformer<*>, body: GuildCommandBody<ArgUnchecked>) {
+    fun executeUncheckedArgs(vararg arg: Transformer<*, out CommandContext>, body: GuildCommandBody<ArgUnchecked>) {
         args = ArgUnchecked(arg.toList())
         execute = body as CommandBody<CommandArguments>
     }
