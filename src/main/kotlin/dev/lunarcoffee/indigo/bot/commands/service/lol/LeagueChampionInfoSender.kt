@@ -57,14 +57,14 @@ class LeagueChampionInfoSender(private val championNames: List<String>) : Conten
                     title = embedTitle
                     thumbnail = champion.image.url
 
-                    field("Passive: ${champion.passive.name}", champion.passive.description().removeHtmlTags())
+                    field("Passive: ${champion.passive.name}", champion.passive.description().removeTags())
                     for ((spell, key) in champion.spells.zip(listOf('Q', 'W', 'E', 'R'))) {
                         field {
                             name = "$key: ${spell.name}"
                             value = """
                                 |**Cooldown**: ${spell.cooldowns.formatDistinct()} seconds
                                 |**Range**: ${spell.ranges.formatDistinct()} units
-                                |**Description**: ${spell.description.removeHtmlTags()}
+                                |**Description**: ${spell.description.removeTags()}
                             """.trimMargin()
                         }
                     }
@@ -88,7 +88,7 @@ class LeagueChampionInfoSender(private val championNames: List<String>) : Conten
         if (distinct().size == 1) get(0).trimExcessZeroes() else joinToString("/") { it.trimExcessZeroes() }
 
     private fun Number.trimExcessZeroes() = if (this is Double && this % 1.0 == 0.0) toInt().toString() else toString()
-    private fun String.removeHtmlTags() = replace("(<br>)+".toRegex(), " ").replace("<[^<>]+>".toRegex(), "")
+    private fun String.removeTags() = replace("(<br>)+".toRegex(), " ").replace("<[^<>]+>".toRegex(), "")
 
     companion object {
         private val allChampions = Champions.withRegion(Region.NORTH_AMERICA).get()

@@ -1,7 +1,6 @@
 package dev.lunarcoffee.indigo.bot.commands.service
 
-import dev.lunarcoffee.indigo.bot.commands.service.lol.LeagueChampionInfoSender
-import dev.lunarcoffee.indigo.bot.commands.service.lol.LeagueItemInfoSender
+import dev.lunarcoffee.indigo.bot.commands.service.lol.*
 import dev.lunarcoffee.indigo.bot.commands.service.xkcd.XkcdComicRequester
 import dev.lunarcoffee.indigo.bot.commands.service.xkcd.XkcdComicSender
 import dev.lunarcoffee.indigo.bot.util.failureDefault
@@ -44,23 +43,25 @@ class ServiceCommands {
 
     fun lol() = command("lol", "lolinfo") {
         description = """
-            |`$name <"champion"|"item"> <champion name|item name>`
+            |`$name <"champion"|"item"|"rune"> <champion name|item name|rune name>`
             |Shows information about a given champion or item in League of Legends.
-            |This command will give you detailed information on a champion or item from League of Legends. If the first
-            |argument is `champion`, the next should be the `champion name`. If the first argument is `item`, the next
-            |should be the `item name`. These names do not have to be exact (no need to have perfect capitalization or
-            |spelling); if they are close enough, I can take a shot at guessing what champion or item you want.
+            |This command will give you detailed information on a champion, item, or rune from League of Legends. If 
+            |the first argument is `champion`, the next should be the `champion name`, similarly for the other two
+            |options. These names do not have to be exact (no need to have perfect capitalization or spelling); if they 
+            |are close enough, I can take a shot at guessing what you want.
             |&{Example usage:}
             |- `$name champion mordekaiser`\n
-            |- `$name item zhonyas hourglass`
+            |- `$name item zhonyas hourglass`\n
+            |- `$name rune time warp tonic`
         """.trimMargin()
 
-        execute(TrWord, TrRestJoined) { (action, championOrItemName) ->
-            val correctedName = championOrItemName.split(' ').joinToString(" ") { it.toLowerCase().capitalize() }
+        execute(TrWord, TrRestJoined) { (action, userProvidedName) ->
+            val alternativeName = userProvidedName.split(' ').joinToString(" ") { it.toLowerCase().capitalize() }
             send(
                 when (action) {
-                    "champion" -> LeagueChampionInfoSender(listOf(championOrItemName, correctedName))
-                    "item" -> LeagueItemInfoSender(listOf(championOrItemName, correctedName))
+                    "champion" -> LeagueChampionInfoSender(listOf(userProvidedName, alternativeName))
+                    "item" -> LeagueItemInfoSender(listOf(userProvidedName, alternativeName))
+                    "rune" -> LeagueRuneInfoSender(listOf(userProvidedName, alternativeName))
                     else -> {
                         failureDefault(this@command.name)
                         return@execute

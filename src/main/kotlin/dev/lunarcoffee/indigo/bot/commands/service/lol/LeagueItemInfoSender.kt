@@ -54,7 +54,7 @@ class LeagueItemInfoSender(private val itemNames: List<String>) : ContentSender 
         // keep are substituted to something else that does not look like a tag. Next, all tags are removed, except for
         // `<br>` elements which are replaced by a space. Finally, the first substitution is undone.
         var newStr = substitutions.fold(this) { acc, (before, after) -> acc.replace(before, after) }
-        newStr = newStr.replace("(<br>)+".toRegex(), " ").replace(tagRegex, "")
+        newStr = newStr.replace(lineBreakRegex, " ").replace(tagRegex, "")
         newStr = substitutions.fold(newStr) { acc, (before, after) -> acc.replace(after, before) }
 
         val actives = activeRegex.findAll(newStr).map { "**${it.groupValues[2]}**:${it.groupValues[4]}" }
@@ -76,7 +76,9 @@ class LeagueItemInfoSender(private val itemNames: List<String>) : ContentSender 
             .flatMap { listOf(it, "</${it.drop(1)}") }
             .map { it to it.replace("<", "{").replace(">", "}") }
 
+        private val lineBreakRegex = "(<br>)+".toRegex()
         private val tagRegex = "<[^>]+>".toRegex()
+
         private val statRegex = "<stats>(.+)</stats>".toRegex()
         private val activeRegex = "<(unique|active)>(UNIQUE Active[^:]*):</(unique|active)>([^<]+)(<|$)".toRegex()
         private val auraRegex = "<aura>([^:]+):</aura>([^<]+)(<|$)".toRegex()
