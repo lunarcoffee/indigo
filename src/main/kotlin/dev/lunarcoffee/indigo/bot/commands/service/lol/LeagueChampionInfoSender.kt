@@ -71,18 +71,23 @@ class LeagueChampionInfoSender(private val championNames: List<String>) : Conten
                 }
 
                 // Page with tips for playing as and against the champion.
-                embedPage {
-                    title = embedTitle
-                    thumbnail = champion.image.url
+                if (champion.allyTips.isNotEmpty()) {
+                    embedPage {
+                        title = embedTitle
+                        thumbnail = champion.image.url
 
-                    field("Tips for playing as ${champion.name}", champion.allyTips.joinToString("\n- ", "- "))
-                    field("Tips for playing against ${champion.name}", champion.enemyTips.joinToString("\n- ", "- "))
+                        field("Tips for playing as ${champion.name}", champion.allyTips.joinToString("\n- ", "- "))
+                        field("Tips for playing into ${champion.name}", champion.enemyTips.joinToString("\n- ", "- "))
+                    }
                 }
             }
         )
     }
 
-    private fun List<Number>.formatDistinct() = if (distinct().size == 1) get(0).toString() else joinToString("/")
+    private fun List<Number>.formatDistinct() =
+        if (distinct().size == 1) get(0).trimExcessZeroes() else joinToString("/") { it.trimExcessZeroes() }
+
+    private fun Number.trimExcessZeroes() = if (this is Double && this % 1.0 == 0.0) toInt().toString() else toString()
     private fun String.removeHtmlTags() = replace("(<br>)+".toRegex(), " ").replace("<[^<>]+>".toRegex(), "")
 
     companion object {

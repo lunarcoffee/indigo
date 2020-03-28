@@ -47,16 +47,15 @@ class LeagueItemInfoSender(private val itemNames: List<String>) : ContentSender 
             ?.groupValues
             ?.get(1)
             ?.split("<br>")
-            ?.map { it.replace("<[^>]+>".toRegex(), "") }
+            ?.map { it.replace(tagRegex, "") }
             ?: emptyList()
 
-        // This terrible mess removes tags which we do not parse here (unique, aura, consumable).
-        var newStr = this
-        for (substitution in substitutions)
-            newStr = newStr.replace(substitution, substitution.replace("<", "{").replace(">", "}"))
-        newStr = newStr.replace("(<br>)+".toRegex(), " ").replace("<[^>]+>".toRegex(), "")
-        for (substitution in substitutions)
-            newStr = newStr.replace(substitution.replace("<", "{").replace(">", "}"), substitution)
+        // This terrible mess removes tags which we do not parse here (unique, aura, consumable). First, the tags to
+        // keep are substituted to something else that does not look like a tag. Next, all tags are removed, except for
+        // `<br>` elements which are replaced by a space. Finally, the first substitution is undone.
+        var newStr = substitutions.fold(this) { acc, (before, after) -> acc.replace(before, after) }
+        newStr = newStr.replace("(<br>)+".toRegex(), " ").replace(tagRegex, "")
+        newStr = substitutions.fold(newStr) { acc, (before, after) -> acc.replace(after, before) }
 
         val actives = activeRegex.findAll(newStr).map { "**${it.groupValues[2]}**:${it.groupValues[4]}" }
         val auras = auraRegex.findAll(newStr).map { "**${it.groupValues[1]}**:${it.groupValues[2]}" }
@@ -75,7 +74,9 @@ class LeagueItemInfoSender(private val itemNames: List<String>) : ContentSender 
     companion object {
         private val substitutions = listOf("<unique>", "<aura>", "<consumable>", "<active>", "<passive>")
             .flatMap { listOf(it, "</${it.drop(1)}") }
+            .map { it to it.replace("<", "{").replace(">", "}") }
 
+        private val tagRegex = "<[^>]+>".toRegex()
         private val statRegex = "<stats>(.+)</stats>".toRegex()
         private val activeRegex = "<(unique|active)>(UNIQUE Active[^:]*):</(unique|active)>([^<]+)(<|$)".toRegex()
         private val auraRegex = "<aura>([^:]+):</aura>([^<]+)(<|$)".toRegex()
