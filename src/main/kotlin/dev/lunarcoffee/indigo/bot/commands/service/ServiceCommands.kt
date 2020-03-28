@@ -1,5 +1,8 @@
 package dev.lunarcoffee.indigo.bot.commands.service
 
+import com.merakianalytics.orianna.Orianna
+import com.merakianalytics.orianna.types.common.Region
+import com.merakianalytics.orianna.types.core.staticdata.Versions
 import dev.lunarcoffee.indigo.bot.commands.service.lol.*
 import dev.lunarcoffee.indigo.bot.commands.service.xkcd.XkcdComicRequester
 import dev.lunarcoffee.indigo.bot.commands.service.xkcd.XkcdComicSender
@@ -42,13 +45,14 @@ class ServiceCommands {
     }
 
     fun lol() = command("lol", "lolinfo") {
+        val patch = Versions.withRegion(Region.NORTH_AMERICA).get()[0]
         description = """
             |`$name <"champion"|"item"|"rune"> <champion name|item name|rune name>`
-            |Shows information about a given champion or item in League of Legends.
+            |Shows information about a champion, item, or rune in League of Legends.
             |This command will give you detailed information on a champion, item, or rune from League of Legends. If 
-            |the first argument is `champion`, the next should be the `champion name`, similarly for the other two
-            |options. These names do not have to be exact (no need to have perfect capitalization or spelling); if they 
-            |are close enough, I can take a shot at guessing what you want.
+            |the first argument is `champion`, the next should be the `champion name`, similarly for items and runes. 
+            |These names do not have to be exact (no need to have perfect capitalization or spelling); if they are 
+            |close enough, I can take a shot at guessing what you want. Currently, I am using data from patch v$patch.
             |&{Example usage:}
             |- `$name champion mordekaiser`\n
             |- `$name item zhonyas hourglass`\n

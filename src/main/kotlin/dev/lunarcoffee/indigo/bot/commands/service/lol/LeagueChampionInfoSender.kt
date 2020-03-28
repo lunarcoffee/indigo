@@ -2,7 +2,6 @@ package dev.lunarcoffee.indigo.bot.commands.service.lol
 
 import com.merakianalytics.orianna.types.common.Region
 import com.merakianalytics.orianna.types.core.staticdata.Champion
-import com.merakianalytics.orianna.types.core.staticdata.Champions
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
 import dev.lunarcoffee.indigo.bot.util.distance
 import dev.lunarcoffee.indigo.framework.api.dsl.paginator
@@ -17,7 +16,7 @@ class LeagueChampionInfoSender(private val championNames: List<String>) : Conten
         val champion = championNames
             .map { Champion.named(it).withRegion(Region.NORTH_AMERICA).get() }
             .firstOrNull { it.stats != null }
-            ?: allChampions.firstOrNull { champion -> championNames.any { it.distance(champion.name) < 4 } }
+            ?: LeagueInfo.allChampions.firstOrNull { champion -> championNames.any { it.distance(champion.name) < 4 } }
         ctx.checkNull(champion, "That champion does not exist!") ?: return
 
         ctx.send(
@@ -89,8 +88,4 @@ class LeagueChampionInfoSender(private val championNames: List<String>) : Conten
 
     private fun Number.trimExcessZeroes() = if (this is Double && this % 1.0 == 0.0) toInt().toString() else toString()
     private fun String.removeTags() = replace("(<br>)+".toRegex(), " ").replace("<[^<>]+>".toRegex(), "")
-
-    companion object {
-        private val allChampions = Champions.withRegion(Region.NORTH_AMERICA).get()
-    }
 }

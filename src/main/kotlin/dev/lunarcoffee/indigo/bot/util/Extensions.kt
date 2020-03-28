@@ -45,6 +45,7 @@ fun OffsetDateTime.formatTimeOnly() = format(TIME_ONLY_FORMATTER)!!
 
 fun List<*>.ifEmptyNone() = ifEmpty { "(none)" }.toString()
 fun String.ifEmptyNone() = ifEmpty { "(none)" }
+fun Int.ifZeroNone() = takeIf { it > 0 }.ifNullNone()
 fun <T> T?.ifNullNone() = this?.toString() ?: "(none)"
 fun String?.ifNullNoneElseLink() = this?.run { "[link]($this)" }.ifNullNone()
 fun Boolean.toYesNo() = if (this) "yes" else "no"

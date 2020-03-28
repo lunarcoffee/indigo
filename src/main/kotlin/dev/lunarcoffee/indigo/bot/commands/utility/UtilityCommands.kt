@@ -4,8 +4,8 @@ import dev.lunarcoffee.indigo.bot.commands.utility.help.CommandHelpSender
 import dev.lunarcoffee.indigo.bot.commands.utility.help.ListHelpSender
 import dev.lunarcoffee.indigo.bot.commands.utility.remind.Reminder
 import dev.lunarcoffee.indigo.bot.commands.utility.remind.ReminderManager
-import dev.lunarcoffee.indigo.bot.commands.utility.remind.reminders.ReminderCancelSender
-import dev.lunarcoffee.indigo.bot.commands.utility.remind.reminders.ReminderListSender
+import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderCancelSender
+import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderListSender
 import dev.lunarcoffee.indigo.bot.util.*
 import dev.lunarcoffee.indigo.bot.util.settings.usersettings.UserSettingsManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
@@ -30,7 +30,7 @@ class UtilityCommands {
             |- `$name 20m`
         """.trimMargin()
 
-        execute(TrTime, TrRestJoined.optional("(no message)")) { (delay, message) ->
+        execute(TrTime, TrRestJoined.optional { "(no message)" }) { (delay, message) ->
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
             check(delay, "Your reminder must be in at least 30 seconds!") { totalSeconds < 30 } ?: return@execute
 
@@ -64,7 +64,7 @@ class UtilityCommands {
             |- `$name 2:00am`
         """.trimMargin()
 
-        execute(TrClockTime, TrRestJoined.optional("(no message)")) { (clockTime, message) ->
+        execute(TrClockTime, TrRestJoined.optional { "(no message)" }) { (clockTime, message) ->
             val zone = UserSettingsManager.get(event.author.id).zone
             checkNull(zone, "You must set a timezone with the `settz` command!") ?: return@execute
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute

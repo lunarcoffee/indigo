@@ -2,7 +2,6 @@ package dev.lunarcoffee.indigo.bot.commands.service.lol
 
 import com.merakianalytics.orianna.types.common.Region
 import com.merakianalytics.orianna.types.core.staticdata.ReforgedRune
-import com.merakianalytics.orianna.types.core.staticdata.ReforgedRunes
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
 import dev.lunarcoffee.indigo.bot.util.distance
 import dev.lunarcoffee.indigo.framework.api.dsl.embed
@@ -17,7 +16,7 @@ class LeagueRuneInfoSender(private val runeNames: List<String>) : ContentSender 
         val rune = runeNames
             .map { ReforgedRune.named(it).withRegion(Region.NORTH_AMERICA).get() }
             .firstOrNull { it.shortDescription != null }
-            ?: allRunes.firstOrNull { rune -> runeNames.any { it.distance(rune.name) < 4 } }
+            ?: LeagueInfo.allRunes.firstOrNull { rune -> runeNames.any { it.distance(rune.name) < 4 } }
         ctx.checkNull(rune, "That rune does not exist!") ?: return
 
         val formatted = rune!!.longDescription.formatTags()
@@ -32,8 +31,8 @@ class LeagueRuneInfoSender(private val runeNames: List<String>) : ContentSender 
         )
     }
 
-    private fun String.formatTags() = replace(lineBreakRegex, "\n")
-        .replace(tagRegex, "")
+    private fun String.formatTags() = replace(LeagueInfo.lineBreakRegex, "\n")
+        .replace(LeagueInfo.tagRegex, "")
         .split("\n", limit = 2)
         .map { p -> p.lines().joinToString("\n") { l -> l.replace(beforeColonRegex) { "**${it.groupValues[1]}**:" } } }
 
@@ -41,10 +40,6 @@ class LeagueRuneInfoSender(private val runeNames: List<String>) : ContentSender 
         private const val RUNE_IMAGE_ROOT =
             "http://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1"
 
-        private val lineBreakRegex = "(<br>)+".toRegex()
-        private val tagRegex = "<[^>]+>".toRegex()
         private val beforeColonRegex = "^([^:]+):".toRegex()
-
-        private val allRunes = ReforgedRunes.withRegion(Region.NORTH_AMERICA).get()
     }
 }

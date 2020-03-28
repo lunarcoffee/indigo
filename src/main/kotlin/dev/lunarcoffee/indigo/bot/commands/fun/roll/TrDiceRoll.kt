@@ -3,7 +3,7 @@ package dev.lunarcoffee.indigo.bot.commands.`fun`.roll
 import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.Transformer
 
-object TrDiceRoll : Transformer<DiceRoll> {
+object TrDiceRoll : Transformer<DiceRoll, CommandContext> {
     private val DICE_ROLL_REGEX = """(\d*)d(\d+)([+-]\d+)?""".toRegex()
 
     override val errorMessage = "A dice specifier was formatted incorrectly!"
