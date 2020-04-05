@@ -18,14 +18,13 @@ class MiscCommands {
             |`$name`
             |Shows a few calculations relating to the speed at which I can get to you.
             |This command shows the round-trip REST API latency, the time between the heartbeat send and the receiving
-            |of the ACK response for the WebSocket gateway, the time it takes to allocate a kotlin.Int on the stack,
-            |and the time it takes to allocate a java.lang.String with its no-args constructor on the heap.
+            |of the ACK response for the WebSocket gateway, and the time it takes to allocate a java.lang.String with 
+            |its no-args constructor on the heap.
         """.trimMargin()
 
         @Suppress("UNUSED_VARIABLE")
         execute {
             val restApiPing = jda.restPing.await()
-            val stackLatency = measureNanoTime { val a = 0 }
             val heapLatency = measureNanoTime { val a = String() }
 
             send(
@@ -34,7 +33,6 @@ class MiscCommands {
                     description = """
                         |**REST API**: $restApiPing ms
                         |**Heartbeat to ACK**: ${jda.gatewayPing} ms
-                        |**Stack allocation**: $stackLatency ns
                         |**Heap allocation (string)**: $heapLatency ns
                     """.trimMargin()
                 }

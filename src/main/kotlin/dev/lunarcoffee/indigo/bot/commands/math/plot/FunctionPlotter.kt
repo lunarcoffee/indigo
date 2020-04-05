@@ -6,13 +6,12 @@ import java.awt.*
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
-import kotlin.math.abs
-import kotlin.math.roundToInt
+import kotlin.math.*
 
-class FunctionPlotter(val functionStrings: List<String>, val bot: Bot) {
+class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
     private val imageName = "${bot.config["resourceRoot"]}/temp/${functionStrings.hashCode()}.png"
 
-    fun plot(): File? {
+    fun plot(isPolar: Boolean = false): File? {
         val file = File(imageName)
         val image = BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_ARGB).apply {
             createGraphics().apply {
@@ -22,7 +21,9 @@ class FunctionPlotter(val functionStrings: List<String>, val bot: Bot) {
                 setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
                 setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
 
-                drawFunctions() ?: return null
+                drawVisualAid(isPolar)
+                for ((index, function) in functionStrings.withIndex())
+                    drawFunction(isPolar, function, index) ?: return null
                 drawAxes()
             }
         }
@@ -34,16 +35,13 @@ class FunctionPlotter(val functionStrings: List<String>, val bot: Bot) {
     private fun Graphics2D.drawAxes() {
         paint = Color.BLACK
 
-        drawLine(IMAGE_SIZE - PRECISION * INTERVAL * 2, ORIGIN, PRECISION * INTERVAL * 2, ORIGIN)
-        drawLine(ORIGIN, IMAGE_SIZE - PRECISION * INTERVAL * 2, ORIGIN, PRECISION * INTERVAL * 2)
+        // Draw axes.
+        drawLine(IMAGE_SIZE - PRECISION * 2, ORIGIN, PRECISION * 2, ORIGIN)
+        drawLine(ORIGIN, IMAGE_SIZE - PRECISION * 2, ORIGIN, PRECISION * 2)
 
         for (n in 1 until 2 * PRECISION / MULTIPLIER) {
             if (n == PRECISION / MULTIPLIER)
                 continue
-
-            // Draw interval ticks.
-            drawLine(n * MULTIPLIER, ORIGIN - 8, n * MULTIPLIER, ORIGIN + 8)
-            drawLine(ORIGIN - 8, n * MULTIPLIER, ORIGIN + 8, n * MULTIPLIER)
 
             val xLabelOffset = n * MULTIPLIER - when (n - PRECISION / MULTIPLIER) {
                 in 1..9 -> 4
@@ -57,40 +55,96 @@ class FunctionPlotter(val functionStrings: List<String>, val bot: Bot) {
         }
     }
 
-    private fun Graphics2D.drawFunctions(): Unit? {
-        for ((index, string) in functionStrings.withIndex()) {
-            for (x in -PRECISION until PRECISION) {
-                var evaluator = ExpressionCalculator(string.replace("x", "(${x.toDouble() / MULTIPLIER})"))
-                val y = (evaluator.calculate() ?: return null) * INTERVAL * MULTIPLIER
+    private fun Graphics2D.drawVisualAid(isPolar: Boolean) {
+        paint = Color.LIGHT_GRAY
 
-                evaluator = ExpressionCalculator(string.replace("x", "(${(x + 1.0) / MULTIPLIER})"))
-                val nextY = (evaluator.calculate() ?: return null) * INTERVAL * MULTIPLIER
+        if (isPolar) {
+            // Draw circles.
+            for (n in 1 until PRECISION / MULTIPLIER * ceil(sqrt(2.0)).toInt())
+                drawOval(ORIGIN - n * MULTIPLIER, ORIGIN - n * MULTIPLIER, 2 * n * MULTIPLIER, 2 * n * MULTIPLIER)
 
-                // Try to ignore discontinuities.
-                if (
-                    !y.isNaN() && !nextY.isNaN()
-                    && y != Double.POSITIVE_INFINITY && nextY != Double.POSITIVE_INFINITY
-                    && y != Double.NEGATIVE_INFINITY && nextY != Double.NEGATIVE_INFINITY
-                    && abs(nextY - y) <= 5_000
-                ) {
-                    paint = COLORS[index]
-                    drawLine(
-                        ORIGIN + x * INTERVAL,
-                        (IMAGE_SIZE - ORIGIN - y).roundToInt(),
-                        ORIGIN + (x + 1) * INTERVAL,
-                        (IMAGE_SIZE - ORIGIN - nextY).roundToInt()
-                    )
+            // Draw diagonal lines pi/6 radians apart.
+            for (angle in (1..12).map { it * PI / 12 }) {
+                if (angle != 0.0) {
+                    val x = (15 * cos(angle) * MULTIPLIER).roundToInt()
+                    val y = (15 * sin(angle) * MULTIPLIER).roundToInt()
+                    drawLine(x + ORIGIN, y + ORIGIN, ORIGIN - x, ORIGIN - y)
                 }
+            }
+        } else {
+            // Draw grid lines.
+            for (n in 1 until 2 * PRECISION / MULTIPLIER) {
+                drawLine(n * MULTIPLIER, 0, n * MULTIPLIER, IMAGE_SIZE)
+                drawLine(0, n * MULTIPLIER, IMAGE_SIZE, n * MULTIPLIER)
+            }
+        }
+    }
+
+    private fun Graphics2D.drawFunction(isPolar: Boolean, function: String, index: Int) =
+        if (isPolar) drawFunctionPolar(function, index) else drawFunctionCartesian(function, index)
+
+    private fun Graphics2D.drawFunctionCartesian(function: String, index: Int): Unit? {
+        for (increment in -PRECISION..PRECISION) {
+            val x = increment.toDouble() / MULTIPLIER
+            var evaluator = ExpressionCalculator(function.substituteVarX(x))
+            val y = (evaluator.calculate() ?: return null) * MULTIPLIER
+
+            val nextX = (increment + 1.0) / MULTIPLIER
+            evaluator = ExpressionCalculator(function.substituteVarX(nextX))
+            val nextY = (evaluator.calculate() ?: return null) * MULTIPLIER
+
+            if (listOf(y, nextY).notSpecial() && abs(nextY - y) <= 5_000) {
+                paint = COLORS[index]
+                drawLine(
+                    ORIGIN + increment,
+                    (IMAGE_SIZE - ORIGIN - y).roundToInt(),
+                    ORIGIN + (increment + 1),
+                    (IMAGE_SIZE - ORIGIN - nextY).roundToInt()
+                )
             }
         }
         return Unit
     }
 
+    private fun Graphics2D.drawFunctionPolar(function: String, index: Int): Unit? {
+        for (theta in 0..PRECISION * 2) {
+            val angle = theta.toDouble() / PRECISION * PI
+            var evaluator = ExpressionCalculator(function.substituteVarT(angle))
+            val r = (evaluator.calculate() ?: return null)
+
+            val x = r * cos(angle) * MULTIPLIER
+            val y = r * sin(angle) * MULTIPLIER
+
+            val nextAngle = (theta + 1.0) / PRECISION * PI
+            evaluator = ExpressionCalculator(function.substituteVarT(nextAngle))
+            val nextR = (evaluator.calculate() ?: return null)
+
+            val nextX = nextR * cos(nextAngle) * MULTIPLIER
+            val nextY = nextR * sin(nextAngle) * MULTIPLIER
+
+            if (listOf(x, y, nextX, nextY).notSpecial()) {
+                paint = COLORS[index]
+                drawLine(
+                    (ORIGIN + x).roundToInt(),
+                    (IMAGE_SIZE - ORIGIN - y).roundToInt(),
+                    (ORIGIN + nextX).roundToInt(),
+                    (IMAGE_SIZE - ORIGIN - nextY).roundToInt()
+                )
+            }
+        }
+        return Unit
+    }
+
+    private fun String.substituteVarX(x: Double) = replace("x", "($x)")
+    private fun String.substituteVarT(t: Double) = replace("t", "($t)")
+
+    private fun List<Double>.notSpecial() =
+        none { it == Double.POSITIVE_INFINITY || it == Double.NEGATIVE_INFINITY || it.isNaN() }
+
     companion object {
         private const val IMAGE_SIZE = 800
         private const val ORIGIN = IMAGE_SIZE / 2
         private const val PRECISION = 400
-        private const val INTERVAL = 1
         private const val MULTIPLIER = 40
 
         private val COLORS = arrayOf(
