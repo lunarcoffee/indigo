@@ -2,7 +2,9 @@ package dev.lunarcoffee.indigo.bot.commands.math.plot
 
 import dev.lunarcoffee.indigo.bot.commands.math.calc.ExpressionCalculator
 import dev.lunarcoffee.indigo.framework.core.bot.Bot
-import java.awt.*
+import java.awt.Color
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -15,10 +17,9 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
         val file = File(imageName)
         val image = BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_ARGB).apply {
             createGraphics().apply {
-                // Fill background with white.
                 fillRect(0, 0, IMAGE_SIZE, IMAGE_SIZE)
 
-//                setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+                setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
                 setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
 
                 drawVisualAid(isPolar)
@@ -52,6 +53,10 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
             // Draw interval labels.
             drawString((n - PRECISION / MULTIPLIER).toString(), xLabelOffset, ORIGIN - 16)
             drawString((PRECISION / MULTIPLIER - n).toString(), ORIGIN + 16, n * MULTIPLIER + 4)
+
+            // Draw interval ticks.
+            drawLine(n * MULTIPLIER, ORIGIN - 8, n * MULTIPLIER, ORIGIN + 8)
+            drawLine(ORIGIN - 8, n * MULTIPLIER, ORIGIN + 8, n * MULTIPLIER)
         }
     }
 
@@ -94,13 +99,14 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
             val nextY = (evaluator.calculate() ?: return null) * MULTIPLIER
 
             if (listOf(y, nextY).notSpecial() && abs(nextY - y) <= 5_000) {
-                paint = COLORS[index]
-                drawLine(
-                    ORIGIN + increment,
-                    (IMAGE_SIZE - ORIGIN - y).roundToInt(),
-                    ORIGIN + (increment + 1),
-                    (IMAGE_SIZE - ORIGIN - nextY).roundToInt()
+                val (p1, p2) = getLineInBounds(
+                    x * MULTIPLIER + ORIGIN,
+                    ORIGIN - y,
+                    nextX * MULTIPLIER + ORIGIN,
+                    ORIGIN - nextY
                 )
+                paint = COLORS[index]
+                drawLine(p1.x.roundToInt(), p1.y.roundToInt(), p2.x.roundToInt(), p2.y.roundToInt())
             }
         }
         return Unit
@@ -113,14 +119,21 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
         for (increment in 0..upperBound) {
             val angle = increment.toDouble() / PRECISION * PI
             evaluator.setVariable("t", angle)
-            val (x, y) = PolarCoordinates(evaluator.calculate() ?: return null, angle).toCartesian(MULTIPLIER)
+            val r = evaluator.calculate() ?: return null
+            val (x, y) = PolarCoordinates(r, angle).toCartesian()
 
             val nextAngle = (increment + 1.0) / PRECISION * PI
             evaluator.setVariable("t", nextAngle)
-            val (nextX, nextY) = PolarCoordinates(evaluator.calculate() ?: return null, angle).toCartesian(MULTIPLIER)
+            val nextR = evaluator.calculate() ?: return null
+            val (nextX, nextY) = PolarCoordinates(nextR, nextAngle).toCartesian()
 
-            if (listOf(x, y, nextX, nextY).notSpecial()) {
-                val (p1, p2) = getCoordinatesInBounds(x, y, nextX, nextY)
+            if (listOf(x, y, nextX, nextY).notSpecial() && abs(nextR - r) <= 5_000) {
+                val (p1, p2) = getLineInBounds(
+                    x * MULTIPLIER + ORIGIN,
+                    ORIGIN - y * MULTIPLIER,
+                    nextX * MULTIPLIER + ORIGIN,
+                    ORIGIN - nextY * MULTIPLIER
+                )
                 paint = COLORS[index]
                 drawLine(p1.x.roundToInt(), p1.y.roundToInt(), p2.x.roundToInt(), p2.y.roundToInt())
             }
@@ -128,48 +141,69 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
         return Unit
     }
 
-    // TODO: write description as to why this is needed
-    private fun getCoordinatesInBounds(x1: Double, x2: Double, y1: Double, y2: Double): CartesianLine {
+    // This method corrects a given line segment from the points (x1, y1) to (x2, y2) to be within a certain distance
+    // from the visible edge of the image before being drawn. This is necessary because of the apparent behavior of
+    // [Graphics.drawLine] when antialiasing is enabled, where even parts of the line outside of the image buffer will
+    // be considered in logic surrounding the drawing. This causes massive performance impacts when plots, particularly
+    // polar plots, are drawn with sufficient amounts of long lines due to asymptotes and similar phenomena, so this
+    // method exists to combat those losses.
+    private fun getLineInBounds(x1: Double, y1: Double, x2: Double, y2: Double): CartesianLine {
+        // Lower and upper locations in pixels on the image to consider as the edge. These values purposely form a
+        // bounding box larger than actual image to prevent visual artifacts near the visible edge of the image.
+        val lowerEdge = -150.0
+        val upperEdge = IMAGE_SIZE + 150.0
+
+        fun Double.inBounds() = this in lowerEdge..upperEdge
+        fun selectInBounds(first: Double, second: Double) = if (first.inBounds()) first else second
+
         // Calculate scope, handling cases where the line is vertical or horizontal.
         val slope = (y2 - y1) / (x2 - x1)
+        val yInt = y1 - slope * x1
+
         if (slope == Double.POSITIVE_INFINITY || slope == Double.NEGATIVE_INFINITY)
-            return CartesianLine(x1, 0.0, x1, IMAGE_SIZE.toDouble())
-        if (slope == 0.0)
-            return CartesianLine(0.0, y1, IMAGE_SIZE.toDouble(), y1)
+            return CartesianLine(x1, lowerEdge, x1, upperEdge)
+        if (slope == lowerEdge)
+            return CartesianLine(lowerEdge, y1, upperEdge, y1)
 
         // The possible intersections of this line with the four edges of the image.
-        val left = y1 - slope * x1
-        val top = -left / slope
-        val right = slope * IMAGE_SIZE + left
-        val bottom = (IMAGE_SIZE - left) / slope
+        val left = slope * lowerEdge + yInt
+        val top = (lowerEdge - yInt) / slope
+        val right = slope * upperEdge + yInt
+        val bottom = (upperEdge - yInt) / slope
 
-        val intersecting = listOf(left, top, right, bottom).filter { it.inBounds() }
+        // List of all intersecting lines.
+        val xRange = min(x1, x2)..max(x1, x2)
+        val yRange = min(y1, y2)..max(y1, y2)
+        val intersecting = listOf(left, top, right, bottom)
+            .filter { it.inBounds() && if (it == left || it == right) it in yRange else it in xRange }
+
         return when (intersecting.size) {
-            0 -> CartesianLine(x1, x2, y1, y2)
+            // Return the line from the intersection to the point which is inside the image.
             1 -> {
                 val x = selectInBounds(x1, x2)
                 val y = selectInBounds(y1, y2)
                 val (boundedX, boundedY) = when (intersecting[0]) {
-                    left -> Pair(0.0, left)
-                    top -> Pair(top, 0.0)
-                    right -> Pair(IMAGE_SIZE.toDouble(), right)
-                    else -> Pair(bottom, IMAGE_SIZE.toDouble())
+                    left -> Pair(lowerEdge, left)
+                    top -> Pair(top, lowerEdge)
+                    right -> Pair(upperEdge, right)
+                    else -> Pair(bottom, upperEdge)
                 }
                 CartesianLine(boundedX, boundedY, x, y)
             }
-            else -> when (intersecting) {
-                listOf(left, top) -> CartesianLine(0, left, top, 0)
-                listOf(top, right) -> CartesianLine(top, 0, IMAGE_SIZE, right)
-                listOf(right, bottom) -> CartesianLine(IMAGE_SIZE, right, bottom, IMAGE_SIZE)
-                listOf(bottom, left) -> CartesianLine(bottom, IMAGE_SIZE, 0, left)
-                listOf(left, right) -> CartesianLine(0, left, IMAGE_SIZE, right)
-                else -> CartesianLine(top, 0, bottom, IMAGE_SIZE)
+            // Return the line connecting the two intersections on the edge.
+            2 -> when (intersecting) {
+                listOf(left, top) -> CartesianLine(lowerEdge, left, top, lowerEdge)
+                listOf(top, right) -> CartesianLine(top, lowerEdge, upperEdge, right)
+                listOf(right, bottom) -> CartesianLine(upperEdge, right, bottom, upperEdge)
+                listOf(bottom, left) -> CartesianLine(bottom, upperEdge, lowerEdge, left)
+                listOf(left, right) -> CartesianLine(lowerEdge, left, upperEdge, right)
+                else -> CartesianLine(top, lowerEdge, bottom, upperEdge)
             }
+            // Just return the same line. Corner intersections may count as three or even four intersections, but not
+            // enough will do this for a meaningful performance impact.
+            else -> CartesianLine(x1, y1, x2, y2)
         }
     }
-
-    private fun Double.inBounds() = this in 0.0..IMAGE_SIZE.toDouble()
-    private fun selectInBounds(first: Double, second: Double) = if (first.inBounds()) first else second
 
     private fun List<Double>.notSpecial() =
         none { it == Double.POSITIVE_INFINITY || it == Double.NEGATIVE_INFINITY || it.isNaN() }
@@ -177,8 +211,9 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
     companion object {
         private const val IMAGE_SIZE = 800
         private const val ORIGIN = IMAGE_SIZE / 2
-        private const val PRECISION = 400
+        private const val RANGE = 10
         private const val MULTIPLIER = 40
+        private const val PRECISION = RANGE * MULTIPLIER
 
         private val COLORS = arrayOf(
             Color.RED,

@@ -5,14 +5,21 @@ import kotlin.math.*
 
 class ExpressionCalculator(private val exprStr: String) {
     private val expression by lazy { ExpressionParser(ExpressionLexer(exprStr)).getTree() }
+    private var cachedResult: Double? = null
     private val variables = mutableMapOf<String, Double>()
 
-    fun calculate() = if (expression == null) null else runCatching { traverse(expression!!) }.getOrNull()
+    fun calculate(): Double? {
+        if (cachedResult == null)
+            cachedResult = if (expression == null) null else runCatching { traverse(expression!!) }.getOrNull()
+        return cachedResult
+    }
 
     fun setVariable(name: String, value: Double) {
         if (name in constants.keys)
             throw IllegalArgumentException("Name cannot be a constant!")
+
         variables[name] = value
+        cachedResult = null
     }
 
     private fun traverse(expr: Expression): Double {

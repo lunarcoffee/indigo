@@ -30,7 +30,7 @@ class FunctionPlotSender(
 
                 val variable = ifPolar("r", "y")
                 description = funcs
-                    .mapIndexed { index, function -> "**#${index + 1}**: $variable=${function.sanitize()}" }
+                    .mapIndexed { i, function -> "**#${i + 1}**: $variable=${function.sanitize().replace(" ", "")}" }
                     .joinToString("\n")
             }
         ).addFile(file!!).await()
