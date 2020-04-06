@@ -32,7 +32,7 @@ class ExpressionParser(private val lexer: ExpressionLexer) {
             is Token.Identifier -> {
                 // Just a name, not a function call.
                 if (lexer.peek() != Token.LParen)
-                    return Expression.Term.Constant(next.value)
+                    return Expression.Term.Variable(next.value)
                 lexer.next()
 
                 val expr = expression() ?: return null

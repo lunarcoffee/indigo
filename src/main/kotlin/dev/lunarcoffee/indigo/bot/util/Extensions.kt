@@ -11,7 +11,6 @@ import dev.lunarcoffee.indigo.framework.core.std.ClockTime
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.events.message.guild.GenericGuildMessageEvent
-import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -26,8 +25,9 @@ suspend fun MessageChannel.failure(message: String) = send("${Emote(jda).error.a
 suspend fun CommandContext.failureDefault(name: String) =
     failure("That's not right. Type `${invokedPrefix}help $name` for information.")
 
-fun String.sanitize() = MarkdownSanitizer.sanitize(this)
 fun String.takeOrEllipsis(limit: Int) = if (length > limit) "${take(40)}..." else this
+fun String.sanitize() =
+    replace("*", "\\*").replace("_", "\\_").replace("`", "\\`").replace("|", "\\|").replace("~", "\\~")
 
 fun ClockTime.toZoned(zone: ZoneId) = ZonedDateTime
     .now(zone)

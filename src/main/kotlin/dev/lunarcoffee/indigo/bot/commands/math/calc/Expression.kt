@@ -3,7 +3,7 @@ package dev.lunarcoffee.indigo.bot.commands.math.calc
 sealed class Expression {
     sealed class Term : Expression() {
         class Number(val value: Double) : Term()
-        class Constant(val name: String) : Term()
+        class Variable(val name: String) : Term()
 
         sealed class UnaryOp(val operand: Expression) : Term() {
             class Minus(operand: Expression) : UnaryOp(operand)
