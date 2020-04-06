@@ -10,10 +10,11 @@ import dev.lunarcoffee.indigo.framework.core.std.ContentSender
 class FunctionPlotSender(
     plotter: FunctionPlotter,
     private val funcs: List<String>,
-    private val polar: Boolean
+    private val polar: Boolean,
+    domain: Double
 ) : ContentSender {
 
-    private val file = plotter.plot(polar)
+    private val file = plotter.plot(polar, domain)
 
     override suspend fun send(ctx: CommandContext) {
         ctx.checkNull(file, "One or more of your functions was invalid!") ?: return

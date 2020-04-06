@@ -11,19 +11,19 @@ import kotlin.math.*
 class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
     private val imageName = "${bot.config["resourceRoot"]}/temp/${functionStrings.hashCode()}.png"
 
-    fun plot(isPolar: Boolean = false): File? {
+    fun plot(isPolar: Boolean, domain: Double): File? {
         val file = File(imageName)
         val image = BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_ARGB).apply {
             createGraphics().apply {
                 // Fill background with white.
                 fillRect(0, 0, IMAGE_SIZE, IMAGE_SIZE)
 
-                setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+//                setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
                 setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
 
                 drawVisualAid(isPolar)
                 for ((index, function) in functionStrings.withIndex())
-                    drawFunction(isPolar, function, index) ?: return null
+                    drawFunction(isPolar, ExpressionCalculator(function), index, domain) ?: return null
                 drawAxes()
             }
         }
@@ -80,17 +80,17 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
         }
     }
 
-    private fun Graphics2D.drawFunction(isPolar: Boolean, function: String, index: Int) =
-        if (isPolar) drawFunctionPolar(function, index) else drawFunctionCartesian(function, index)
+    private fun Graphics2D.drawFunction(polar: Boolean, evaluator: ExpressionCalculator, index: Int, domain: Double) =
+        if (polar) drawFunctionPolar(evaluator, index, domain) else drawFunctionCartesian(evaluator, index)
 
-    private fun Graphics2D.drawFunctionCartesian(function: String, index: Int): Unit? {
+    private fun Graphics2D.drawFunctionCartesian(evaluator: ExpressionCalculator, index: Int): Unit? {
         for (increment in -PRECISION..PRECISION) {
             val x = increment.toDouble() / MULTIPLIER
-            var evaluator = ExpressionCalculator(function.substituteVarX(x))
+            evaluator.setVariable("x", x)
             val y = (evaluator.calculate() ?: return null) * MULTIPLIER
 
             val nextX = (increment + 1.0) / MULTIPLIER
-            evaluator = ExpressionCalculator(function.substituteVarX(nextX))
+            evaluator.setVariable("x", nextX)
             val nextY = (evaluator.calculate() ?: return null) * MULTIPLIER
 
             if (listOf(y, nextY).notSpecial() && abs(nextY - y) <= 5_000) {
@@ -106,37 +106,70 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
         return Unit
     }
 
-    private fun Graphics2D.drawFunctionPolar(function: String, index: Int): Unit? {
-        for (theta in 0..PRECISION * 2) {
-            val angle = theta.toDouble() / PRECISION * PI
-            var evaluator = ExpressionCalculator(function.substituteVarT(angle))
-            val r = (evaluator.calculate() ?: return null)
+    private fun Graphics2D.drawFunctionPolar(evaluator: ExpressionCalculator, index: Int, domain: Double): Unit? {
+        val domainMultiplier = domain / 2 / PI
+        val upperBound = (PRECISION * 2 * domainMultiplier).roundToInt()
 
-            val x = r * cos(angle) * MULTIPLIER
-            val y = r * sin(angle) * MULTIPLIER
+        for (increment in 0..upperBound) {
+            val angle = increment.toDouble() / PRECISION * PI
+            evaluator.setVariable("t", angle)
+            val (x, y) = PolarCoordinates(evaluator.calculate() ?: return null, angle).toCartesian(MULTIPLIER)
 
-            val nextAngle = (theta + 1.0) / PRECISION * PI
-            evaluator = ExpressionCalculator(function.substituteVarT(nextAngle))
-            val nextR = (evaluator.calculate() ?: return null)
-
-            val nextX = nextR * cos(nextAngle) * MULTIPLIER
-            val nextY = nextR * sin(nextAngle) * MULTIPLIER
+            val nextAngle = (increment + 1.0) / PRECISION * PI
+            evaluator.setVariable("t", nextAngle)
+            val (nextX, nextY) = PolarCoordinates(evaluator.calculate() ?: return null, angle).toCartesian(MULTIPLIER)
 
             if (listOf(x, y, nextX, nextY).notSpecial()) {
+                val (p1, p2) = getCoordinatesInBounds(x, y, nextX, nextY)
                 paint = COLORS[index]
-                drawLine(
-                    (ORIGIN + x).roundToInt(),
-                    (IMAGE_SIZE - ORIGIN - y).roundToInt(),
-                    (ORIGIN + nextX).roundToInt(),
-                    (IMAGE_SIZE - ORIGIN - nextY).roundToInt()
-                )
+                drawLine(p1.x.roundToInt(), p1.y.roundToInt(), p2.x.roundToInt(), p2.y.roundToInt())
             }
         }
         return Unit
     }
 
-    private fun String.substituteVarX(x: Double) = replace("x", "($x)")
-    private fun String.substituteVarT(t: Double) = replace("t", "($t)")
+    // TODO: write description as to why this is needed
+    private fun getCoordinatesInBounds(x1: Double, x2: Double, y1: Double, y2: Double): CartesianLine {
+        // Calculate scope, handling cases where the line is vertical or horizontal.
+        val slope = (y2 - y1) / (x2 - x1)
+        if (slope == Double.POSITIVE_INFINITY || slope == Double.NEGATIVE_INFINITY)
+            return CartesianLine(x1, 0.0, x1, IMAGE_SIZE.toDouble())
+        if (slope == 0.0)
+            return CartesianLine(0.0, y1, IMAGE_SIZE.toDouble(), y1)
+
+        // The possible intersections of this line with the four edges of the image.
+        val left = y1 - slope * x1
+        val top = -left / slope
+        val right = slope * IMAGE_SIZE + left
+        val bottom = (IMAGE_SIZE - left) / slope
+
+        val intersecting = listOf(left, top, right, bottom).filter { it.inBounds() }
+        return when (intersecting.size) {
+            0 -> CartesianLine(x1, x2, y1, y2)
+            1 -> {
+                val x = selectInBounds(x1, x2)
+                val y = selectInBounds(y1, y2)
+                val (boundedX, boundedY) = when (intersecting[0]) {
+                    left -> Pair(0.0, left)
+                    top -> Pair(top, 0.0)
+                    right -> Pair(IMAGE_SIZE.toDouble(), right)
+                    else -> Pair(bottom, IMAGE_SIZE.toDouble())
+                }
+                CartesianLine(boundedX, boundedY, x, y)
+            }
+            else -> when (intersecting) {
+                listOf(left, top) -> CartesianLine(0, left, top, 0)
+                listOf(top, right) -> CartesianLine(top, 0, IMAGE_SIZE, right)
+                listOf(right, bottom) -> CartesianLine(IMAGE_SIZE, right, bottom, IMAGE_SIZE)
+                listOf(bottom, left) -> CartesianLine(bottom, IMAGE_SIZE, 0, left)
+                listOf(left, right) -> CartesianLine(0, left, IMAGE_SIZE, right)
+                else -> CartesianLine(top, 0, bottom, IMAGE_SIZE)
+            }
+        }
+    }
+
+    private fun Double.inBounds() = this in 0.0..IMAGE_SIZE.toDouble()
+    private fun selectInBounds(first: Double, second: Double) = if (first.inBounds()) first else second
 
     private fun List<Double>.notSpecial() =
         none { it == Double.POSITIVE_INFINITY || it == Double.NEGATIVE_INFINITY || it.isNaN() }

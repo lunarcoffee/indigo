@@ -9,6 +9,7 @@ import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.transformers.*
 import java.math.RoundingMode
+import kotlin.math.PI
 
 @CommandGroup("Math")
 class MathCommands {
@@ -68,28 +69,30 @@ class MathCommands {
 
         execute(TrMany(TrWord)) { (funcs) ->
             check(funcs, "I will only plot up to five functions!") { size > 5 } ?: return@execute
-            send(FunctionPlotSender(FunctionPlotter(funcs, bot), funcs, false))
+            send(FunctionPlotSender(FunctionPlotter(funcs, bot), funcs, false, 0.0))
         }
     }
 
     fun plotPolar() = command("plotpolar", "graphpolar") {
         description = """
-            |`$name <functions of t...>`
+            |`$name ["domain"=number] <functions of t...>`
             |Plots up to five functions of a single variable on a polar coordinate plane.
             |This command takes up to five functions of a single variable `t` (for theta) and plots them on a polar
             |coordinate plane. Each of the `functions` should be an expression of a single variable `t` (can be thought 
             |of as the right side of an equation `r(t)=...`). For information on what constitutes a valid expression, 
             |consult the help text for the `calculate` command. The function will be evaluated with arguments in the
-            |interval [0, 2pi].
+            |interval [0, 2pi], though you can set the `domain` flag to change the upper bound to a value in [0.1, 
+            |32pi] (see examples below).
             |&{Example usage:}
             |- `$name sin(t)`\n
             |- `$name 5*cos(3*t) 3*cos(5*t)`\n
-            |- `$name 1/(1-cos(t))`
+            |- `$name domain=3.14 1/(1-cos(t))`
         """.trimMargin()
 
-        execute(TrMany(TrWord)) { (funcs) ->
+        execute(TrFlag("domain") { it.toDoubleOrNull() }.optional { 2 * PI }, TrMany(TrWord)) { (domain, funcs) ->
             check(funcs, "I will only plot up to five functions!") { size > 5 } ?: return@execute
-            send(FunctionPlotSender(FunctionPlotter(funcs, bot), funcs, true))
+            check(domain, "That upper bound is out of range!") { this !in 0.1..32 * PI } ?: return@execute
+            send(FunctionPlotSender(FunctionPlotter(funcs, bot), funcs, true, domain))
         }
     }
 }

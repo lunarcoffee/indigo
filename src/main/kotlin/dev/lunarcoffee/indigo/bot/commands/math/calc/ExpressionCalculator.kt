@@ -4,9 +4,15 @@ import org.apache.commons.math3.special.Gamma
 import kotlin.math.*
 
 class ExpressionCalculator(private val exprStr: String) {
-    fun calculate(): Double? {
-        val expression = ExpressionParser(ExpressionLexer(exprStr)).getTree() ?: return null
-        return runCatching { traverse(expression) }.getOrNull()
+    private val expression by lazy { ExpressionParser(ExpressionLexer(exprStr)).getTree() }
+    private val variables = mutableMapOf<String, Double>()
+
+    fun calculate() = if (expression == null) null else runCatching { traverse(expression!!) }.getOrNull()
+
+    fun setVariable(name: String, value: Double) {
+        if (name in constants.keys)
+            throw IllegalArgumentException("Name cannot be a constant!")
+        variables[name] = value
     }
 
     private fun traverse(expr: Expression): Double {
@@ -15,7 +21,7 @@ class ExpressionCalculator(private val exprStr: String) {
             is Expression.Term.UnaryOp.Minus -> -traverse(expr.operand)
             is Expression.Term.UnaryOp.Abs -> traverse(expr.operand).absoluteValue
             is Expression.Term.UnaryOp.Factorial -> Gamma.gamma(traverse(expr.operand) + 1)
-            is Expression.Term.Constant -> constant(expr)
+            is Expression.Term.Variable -> constant(expr)
             is Expression.Term.UnaryOp.Function -> function(expr)
             is Expression.BinOp.Plus -> traverse(expr.left) + traverse(expr.right)
             is Expression.BinOp.Minus -> traverse(expr.left) - traverse(expr.right)
@@ -25,14 +31,9 @@ class ExpressionCalculator(private val exprStr: String) {
         }
     }
 
-    private fun constant(constant: Expression.Term.Constant): Double {
-        return when (constant.name.toLowerCase()) {
-            "pi" -> PI
-            "e" -> E
-            "phi" -> PHI
-            "gamma" -> GAMMA
-            else -> throw IllegalArgumentException()
-        }
+    private fun constant(variable: Expression.Term.Variable): Double {
+        val name = variable.name.toLowerCase()
+        return constants[name] ?: variables[name] ?: throw IllegalArgumentException()
     }
 
     private fun function(func: Expression.Term.UnaryOp.Function): Double {
@@ -72,5 +73,7 @@ class ExpressionCalculator(private val exprStr: String) {
     companion object {
         private const val PHI = 1.6180339887498948482
         private const val GAMMA = 0.5772156649015328606
+
+        private val constants = mapOf("pi" to PI, "e" to E, "phi" to PHI, "gamma" to GAMMA)
     }
 }
