@@ -34,7 +34,7 @@ class UtilityCommands {
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
             check(delay, "Your reminder must be in at least 30 seconds!") { totalSeconds < 30 } ?: return@execute
 
-            val zone = UserSettingsManager.get(event.author.id).zone
+            val zone = event.author.getUserSettings().zone
             val timeAfter = delay.asTimeFromNow(zone ?: ZoneId.systemDefault())
             val timeString = if (zone == null) "" else timeAfter.formatDefault()
 
@@ -65,7 +65,7 @@ class UtilityCommands {
         """.trimMargin()
 
         execute(TrClockTime, TrRestJoined.optional { "(no message)" }) { (clockTime, message) ->
-            val zone = UserSettingsManager.get(event.author.id).zone
+            val zone = event.author.getUserSettings().zone
             checkNull(zone, "You must set a timezone with the `settz` command!") ?: return@execute
             check(message, "Your message can be at most 500 characters!") { length > 500 } ?: return@execute
 

@@ -2,9 +2,7 @@ package dev.lunarcoffee.indigo.bot.commands.math.plot
 
 import dev.lunarcoffee.indigo.bot.commands.math.calc.ExpressionCalculator
 import dev.lunarcoffee.indigo.framework.core.bot.Bot
-import java.awt.Color
-import java.awt.Graphics2D
-import java.awt.RenderingHints
+import java.awt.*
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -99,13 +97,15 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
             val nextY = (evaluator.calculate() ?: return null) * MULTIPLIER
 
             if (listOf(y, nextY).notSpecial() && abs(nextY - y) <= 5_000) {
+                paint = COLORS[index]
+
                 val (p1, p2) = getLineInBounds(
                     x * MULTIPLIER + ORIGIN,
                     ORIGIN - y,
                     nextX * MULTIPLIER + ORIGIN,
                     ORIGIN - nextY
-                )
-                paint = COLORS[index]
+                ) ?: continue
+
                 drawLine(p1.x.roundToInt(), p1.y.roundToInt(), p2.x.roundToInt(), p2.y.roundToInt())
             }
         }
@@ -133,7 +133,8 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
                     ORIGIN - y * MULTIPLIER,
                     nextX * MULTIPLIER + ORIGIN,
                     ORIGIN - nextY * MULTIPLIER
-                )
+                ) ?: continue
+
                 paint = COLORS[index]
                 drawLine(p1.x.roundToInt(), p1.y.roundToInt(), p2.x.roundToInt(), p2.y.roundToInt())
             }
@@ -147,7 +148,7 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
     // be considered in logic surrounding the drawing. This causes massive performance impacts when plots, particularly
     // polar plots, are drawn with sufficient amounts of long lines due to asymptotes and similar phenomena, so this
     // method exists to combat those losses.
-    private fun getLineInBounds(x1: Double, y1: Double, x2: Double, y2: Double): CartesianLine {
+    private fun getLineInBounds(x1: Double, y1: Double, x2: Double, y2: Double): CartesianLine? {
         // Lower and upper locations in pixels on the image to consider as the edge. These values purposely form a
         // bounding box larger than actual image to prevent visual artifacts near the visible edge of the image.
         val lowerEdge = -150.0
@@ -156,14 +157,12 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
         fun Double.inBounds() = this in lowerEdge..upperEdge
         fun selectInBounds(first: Double, second: Double) = if (first.inBounds()) first else second
 
-        // Calculate scope, handling cases where the line is vertical or horizontal.
+        // Don't bother drawing a line off the screen.
+        if (!x1.inBounds() && !x2.inBounds() || !y1.inBounds() && !y2.inBounds())
+            return null
+
         val slope = (y2 - y1) / (x2 - x1)
         val yInt = y1 - slope * x1
-
-        if (slope == Double.POSITIVE_INFINITY || slope == Double.NEGATIVE_INFINITY)
-            return CartesianLine(x1, lowerEdge, x1, upperEdge)
-        if (slope == lowerEdge)
-            return CartesianLine(lowerEdge, y1, upperEdge, y1)
 
         // The possible intersections of this line with the four edges of the image.
         val left = slope * lowerEdge + yInt
@@ -171,11 +170,17 @@ class FunctionPlotter(private val functionStrings: List<String>, val bot: Bot) {
         val right = slope * upperEdge + yInt
         val bottom = (upperEdge - yInt) / slope
 
-        // List of all intersecting lines.
+        // List of all intersecting points.
         val xRange = min(x1, x2)..max(x1, x2)
         val yRange = min(y1, y2)..max(y1, y2)
         val intersecting = listOf(left, top, right, bottom)
-            .filter { it.inBounds() && if (it == left || it == right) it in yRange else it in xRange }
+            .zip(listOf(lowerEdge, lowerEdge, upperEdge, upperEdge))
+            .filter { (point, other) ->
+                // Ensure that the points are within the box that bounds the original given line segment.
+                val index = point == left || point == right
+                point in (if (index) yRange else xRange) && other in (if (index) xRange else yRange)
+            }
+            .map { it.first }
 
         return when (intersecting.size) {
             // Return the line from the intersection to the point which is inside the image.

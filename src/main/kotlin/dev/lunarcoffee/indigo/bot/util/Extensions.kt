@@ -2,14 +2,15 @@ package dev.lunarcoffee.indigo.bot.util
 
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
 import dev.lunarcoffee.indigo.bot.util.consts.Emote
+import dev.lunarcoffee.indigo.bot.util.settings.guildsettings.GuildSettingsManager
+import dev.lunarcoffee.indigo.bot.util.settings.usersettings.UserSettingsManager
 import dev.lunarcoffee.indigo.framework.api.exts.await
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.bot.Bot
 import dev.lunarcoffee.indigo.framework.core.commands.CommandContext
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
 import dev.lunarcoffee.indigo.framework.core.std.ClockTime
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageChannel
+import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.message.guild.GenericGuildMessageEvent
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -53,6 +54,9 @@ fun Boolean.toYesNo() = if (this) "yes" else "no"
 fun GuildCommandContext.isAuthorOwner(bot: Bot) = event.author.id == bot.config["ownerId"]!!
 
 suspend fun GenericGuildMessageEvent.getMessage(): Message = channel.retrieveMessageById(messageId).await()
+
+suspend fun GuildCommandContext.getGuildSettings() = GuildSettingsManager.get(guild.id)
+suspend fun User.getUserSettings() = UserSettingsManager.get(id)
 
 fun String.distance(other: String): Int {
     val lhsLength = length

@@ -27,7 +27,7 @@ class ConfigCommands {
         execute(TrRole) { (role) ->
             checkPermission("You must be an admin to use this command!", Permission.ADMINISTRATOR) ?: return@execute
 
-            GuildSettingsManager.update(guild.id, newConfigRoleId = role.id)
+            GuildSettingsManager.update(getGuildSettings().copy(configRoleId = role.id))
             success("The configurer role has been updated!")
         }
     }
@@ -55,7 +55,7 @@ class ConfigCommands {
             if (checkFailed)
                 return@execute
 
-            GuildSettingsManager.update(guild.id, newPrefixes = prefixes.distinct())
+            GuildSettingsManager.update(getGuildSettings().copy(prefixes = prefixes.distinct()))
             success("My prefixes for this server have been updated!")
         }
     }
@@ -74,7 +74,7 @@ class ConfigCommands {
         """.trimMargin()
 
         execute(TrTimeZone(true)) { (zone) ->
-            UserSettingsManager.update(event.author.id, newZone = zone)
+            UserSettingsManager.update(event.author.getUserSettings().copy(zone = zone))
             success("Your time zone has been updated!")
         }
     }
@@ -100,26 +100,21 @@ class ConfigCommands {
         execute(TrWord, TrTextChannel.optional(), TrInt.optional()) { (action, channel, threshold) ->
             checkAdminOrConfigRole() ?: return@execute
 
-            val starboard = GuildSettingsManager.get(guild.id).starboard
-            when (action) {
+            val starboard = getGuildSettings().starboard
+            val newStarboard = when (action) {
                 "channel" -> {
                     checkNull(channel, "You must provide a channel to enable the starboard!") ?: return@execute
                     checkNotNull(threshold, "You must only provide a channel!") ?: return@execute
 
-                    val newStarboard = starboard.apply {
-                        channelId = channel!!.id
-                        enabled = true
-                    }
-                    GuildSettingsManager.update(guild.id, newStarboard = newStarboard)
                     success("The starboard has been enabled!")
+                    starboard.copy(channelId = channel!!.id, enabled = true)
                 }
                 "threshold" -> {
                     checkNull(threshold, "You must provide a threshold for me to set!") ?: return@execute
                     checkNotNull(channel, "You must only provide a threshold!") ?: return@execute
 
-                    val newStarboard = starboard.apply { this@apply.threshold = threshold!! }
-                    GuildSettingsManager.update(guild.id, newStarboard = newStarboard)
                     success("The starboard threshold has been updated!")
+                    starboard.copy(threshold = threshold!!)
                 }
                 "off" -> {
                     if (channel != null || threshold != null) {
@@ -127,17 +122,20 @@ class ConfigCommands {
                         return@execute
                     }
 
-                    val newStarboard = starboard.apply { enabled = false }
-                    GuildSettingsManager.update(guild.id, newStarboard = newStarboard)
                     success("The starboard has been disabled!")
+                    starboard.copy(enabled = false)
                 }
-                else -> failureDefault(this@command.name)
+                else -> {
+                    failureDefault(this@command.name)
+                    return@execute
+                }
             }
+            GuildSettingsManager.update(getGuildSettings().copy(starboard = newStarboard))
         }
     }
 
     private suspend fun GuildCommandContext.checkAdminOrConfigRole(): Unit? {
-        val configRole = GuildSettingsManager.get(guild.id).configRoleId ?: ""
+        val configRole = getGuildSettings().configRoleId ?: ""
         return check(event.member!!, "You must be an admin or have the configurer role to use this command!") {
             !hasPermission(Permission.ADMINISTRATOR) && configRole !in roles.map { it.id }
         }
