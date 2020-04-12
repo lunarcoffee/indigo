@@ -1,4 +1,4 @@
 package dev.lunarcoffee.indigo.framework.core.commands
 
-typealias CommandBody<T> = suspend CommandContext.(T) -> Unit
-typealias GuildCommandBody<T> = suspend GuildCommandContext.(T) -> Unit
+typealias CommandBody<TCommandArgs> = suspend CommandContext.(TCommandArgs) -> Unit
+typealias GuildCommandBody<TCommandArgs> = suspend GuildCommandContext.(TCommandArgs) -> Unit

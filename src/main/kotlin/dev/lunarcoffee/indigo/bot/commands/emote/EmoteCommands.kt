@@ -164,7 +164,6 @@ class EmoteCommands {
             check(emoteName, "That emote name is invalid!") { ' ' in this } ?: return@execute
 
             val imageIcon = image.retrieveAsIcon().await()
-
             tryAddEmote(emoteName, imageIcon!!) ?: return@execute
             success("Your emote has been added!")
         }

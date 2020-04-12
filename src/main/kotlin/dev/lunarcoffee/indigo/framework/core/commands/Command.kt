@@ -10,11 +10,7 @@ interface Command {
     val description: String?
 
     val args: CommandArguments
-    val argTransfomers
-        get() = args.asList().map {
-            @Suppress("UNCHECKED_CAST")
-            it as Transformer<*, CommandContext>
-        }
+    val argTransfomers get() = args.asList().map { @Suppress("UNCHECKED_CAST") (it as Transformer<*, CommandContext>) }
 
     val execute: CommandBody<CommandArguments>
 }

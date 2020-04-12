@@ -12,7 +12,7 @@ interface CommandContext : HasBot, HasJDA, TextChannel {
 
     var checkFailed: Boolean
 
-    suspend fun <T> check(arg: T, failureMessage: String, check: T.() -> Boolean): Unit? {
+    suspend fun <TArg> check(arg: TArg, failureMessage: String, check: TArg.() -> Boolean): Unit? {
         if (check(arg) && !checkFailed) {
             checkFailed = true
             failure(failureMessage)
@@ -21,6 +21,6 @@ interface CommandContext : HasBot, HasJDA, TextChannel {
         return Unit
     }
 
-    suspend fun <T> checkNull(arg: T, failureMessage: String) = check(arg, failureMessage) { this == null }
-    suspend fun <T> checkNotNull(arg: T, failureMessage: String) = check(arg, failureMessage) { this != null }
+    suspend fun <TArg> checkNull(arg: TArg, failureMessage: String) = check(arg, failureMessage) { this == null }
+    suspend fun <TArg> checkNotNull(arg: TArg, failureMessage: String) = check(arg, failureMessage) { this != null }
 }
