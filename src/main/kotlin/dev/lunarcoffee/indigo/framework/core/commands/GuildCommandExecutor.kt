@@ -1,7 +1,7 @@
 package dev.lunarcoffee.indigo.framework.core.commands
 
 import dev.lunarcoffee.indigo.bot.util.failure
-import dev.lunarcoffee.indigo.framework.core.bot.CommandBot
+import dev.lunarcoffee.indigo.framework.core.bot.GuildCommandBot
 import dev.lunarcoffee.indigo.framework.core.commands.argparsers.QuotedArgumentParser
 import kotlinx.coroutines.*
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
@@ -10,13 +10,11 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 // [prefix] takes a guild ID and returns the valid prefixes for that guild.
 class GuildCommandExecutor(private val prefix: (String) -> List<String>) : CommandExecutor, ListenerAdapter() {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-
-    override lateinit var bot: CommandBot
+    private val bot by lazy { GuildCommandBot.instance }
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         val content = event.message.contentRaw
-        val prefixes = prefix(event.guild.id)
-        val invokedPrefix = prefixes.find { content.startsWith(it) } ?: return
+        val invokedPrefix = prefix(event.guild.id).find { content.startsWith(it) } ?: return
 
         if (event.author.isBot || event.isWebhookMessage)
             return

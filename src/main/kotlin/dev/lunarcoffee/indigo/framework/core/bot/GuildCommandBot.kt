@@ -27,10 +27,14 @@ class GuildCommandBot(
     override val listeners = EventListenerLoader(config.sourceRoot).load()
 
     override fun start() {
-        commandExecutor.bot = this
+        instance = this
         jda = jdaBuilder
             .setToken(config.token)
             .addEventListeners(*listeners.toTypedArray(), commandExecutor, PaginatorReactionListener)
             .build()
+    }
+
+    companion object {
+        lateinit var instance: GuildCommandBot
     }
 }
