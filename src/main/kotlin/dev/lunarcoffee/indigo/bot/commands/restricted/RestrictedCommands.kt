@@ -4,6 +4,7 @@ import dev.lunarcoffee.indigo.bot.util.isAuthorOwner
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.dsl.embed
+import dev.lunarcoffee.indigo.framework.api.exts.remove
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
 import dev.lunarcoffee.indigo.framework.core.commands.GuildCommandContext
@@ -50,6 +51,7 @@ class RestrictedCommands {
 
         execute(TrRestJoined) { (message) ->
             checkOwner() ?: return@execute
+            runCatching { event.message.remove() }
             send(message)
         }
     }
@@ -68,15 +70,24 @@ class RestrictedCommands {
 
         execute(TrWord, TrWord.optional { "" }, TrWord.optional()) { (title, description, color) ->
             checkOwner() ?: return@execute
+            runCatching { event.message.remove() }
             send(
                 embed {
                     this@embed.title = title
                     this@embed.description = description
-
-                    if (color != null)
-                        this@embed.color = color.toIntOrNull(16) ?: this@embed.color
+                    this@embed.color = color?.toIntOrNull(16) ?: this@embed.color
                 }
             )
+        }
+    }
+
+    fun execute() = command("execute", "exec", "ex") {
+        description = """
+            |`$name <code block with language>`
+        """.trimMargin()
+
+        execute(TrRestJoined) { (codeBlock) ->
+            val language = codeBlock.substringAfter("```")
         }
     }
 

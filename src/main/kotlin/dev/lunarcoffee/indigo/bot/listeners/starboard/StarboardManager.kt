@@ -52,7 +52,7 @@ object StarboardManager {
 
     private fun getEntryEmbed(message: Message): MessageEmbed {
         return embed {
-            field("Content", message.contentRaw.takeOrEllipsis(1_000))
+            field("Content", message.contentRaw.takeOrEllipsis(1_000).ifEmptyNone())
             field {
                 name = "Information"
                 value = """
@@ -61,6 +61,7 @@ object StarboardManager {
                     |**Link**: [click here](${message.jumpUrl})
                 """.trimMargin()
             }
+            image = message.attachments.firstOrNull()?.url
 
             val stars = countStars(message)
             val plural = if (stars == 1) "" else "s"

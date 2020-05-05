@@ -32,6 +32,9 @@ class CommandSuggestionListener : ListenerAdapter() {
         val invokedPrefix = prefixes.find { content.startsWith(it) } ?: return
 
         val inputCommandName = content.substringBefore(' ').substringAfter(invokedPrefix)
+        if (inputCommandName.length < 2 || !inputCommandName[0].isLetterOrDigit())
+            return
+
         val (distance, command) = bot
             .commandsByName
             .keys
@@ -39,11 +42,7 @@ class CommandSuggestionListener : ListenerAdapter() {
             .map { Pair(inputCommandName.distance(it), it) }
             .minBy { it.first }!!
 
-        // The command invocation is correct, no need for a suggestion.
-        if (distance == 0)
-            return
-
-        if (distance < 4) {
+        if (command != inputCommandName && distance < 4) {
             userSuggestions[event.author.id] = Pair(command, event)
             event.channel.failure("No command has that name. If you meant `$command`, type `$RERUN_TEXT` to run it.")
         }

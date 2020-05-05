@@ -184,6 +184,6 @@ class EmoteCommands {
 
     private suspend fun GuildCommandContext.tryAddEmote(name: String, icon: Icon): Unit? {
         val add = runCatching { event.guild.createEmote(name, icon).await() }.getOrNull()
-        return checkNull(add, "Your server is probably be out of emote slots!")
+        return checkNull(add, "Your server is probably out of emote slots!")
     }
 }
