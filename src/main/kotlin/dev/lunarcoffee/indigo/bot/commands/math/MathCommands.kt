@@ -20,7 +20,7 @@ class MathCommands {
             |This command will evaluate the given mathematical `expression`. The supported operators include `+`, `-`,
             |`*`, `/`, `^` (exponentiation), `n!` (factorial), and `|n|` (absolute value). There are four defined
             |constants, `pi`, `e`, `phi`, and `gamma`. There are also many functions available, including the three
-            |primary and three reciprocal trigonometric functions and their inverses, the three primary hyperbolic 
+            |primary and three reciprocal trigonometric functions and their inverses, the three primary hyperbolic
             |trigonometric functions and their inverses, `sqrt`, `ln` (natural logarithm), `log` (base 10 logarithm),
             |`ceil` (ceiling/least integer function), `floor` (floor/greatest integer function), `abs` (absolute
             |value), `exp`, `gamma`, and `sign` (sign function). Trigonometric functions take arguments in radians. The
@@ -32,7 +32,7 @@ class MathCommands {
             |&{Example usage:}
             |- `$name 2+2`\n
             |- `$name 3*(2+sin(pi))+e^2`\n
-            |- `$name ln(|-3/2|)`
+            |- `$name ln(|-3!/2|)`
         """.trimMargin()
 
         execute(TrRestJoined) { (exprStr) ->

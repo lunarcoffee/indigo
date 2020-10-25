@@ -47,7 +47,6 @@ class ExpressionParser(private val lexer: ExpressionLexer) {
             else -> null
         }
 
-        // Factorial operator?
         return if (lexer.peek() != Token.Bang) {
             term
         } else {

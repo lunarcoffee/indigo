@@ -84,10 +84,17 @@ class RestrictedCommands {
     fun execute() = command("execute", "exec", "ex") {
         description = """
             |`$name <code block with language>`
+            |Executes some code.
+            |(none)
         """.trimMargin()
 
         execute(TrRestJoined) { (codeBlock) ->
-            val language = codeBlock.substringAfter("```")
+            val language = codeBlock.substringAfter("```").takeWhile { it.isLetterOrDigit() }
+            when (language) {
+                "haskell" -> {
+
+                }
+            }
         }
     }
 

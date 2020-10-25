@@ -2,12 +2,12 @@ package dev.lunarcoffee.indigo.bot.commands.utility
 
 import dev.lunarcoffee.indigo.bot.commands.utility.help.CommandHelpSender
 import dev.lunarcoffee.indigo.bot.commands.utility.help.ListHelpSender
+import dev.lunarcoffee.indigo.bot.commands.utility.party.PartyManager
 import dev.lunarcoffee.indigo.bot.commands.utility.remind.Reminder
 import dev.lunarcoffee.indigo.bot.commands.utility.remind.ReminderManager
 import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderCancelSender
 import dev.lunarcoffee.indigo.bot.commands.utility.reminders.ReminderListSender
 import dev.lunarcoffee.indigo.bot.util.*
-import dev.lunarcoffee.indigo.bot.util.settings.usersettings.UserSettingsManager
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.exts.send
 import dev.lunarcoffee.indigo.framework.core.commands.CommandGroup
@@ -102,6 +102,58 @@ class UtilityCommands {
                 send(ReminderCancelSender(event.author.id, which))
             else
                 failure("That's not right. Type `${invokedPrefix}help ${this@command.name}` for information.")
+        }
+    }
+
+    fun party() = command("party") {
+        description = """
+            |`$name name ["leave"|"disband"]`
+            |Joins (or creates), leaves, or disbands a party.
+            |A party is a group of members. If no party of `name` exists, one will be created and you will be added to 
+            |it. When joining, all members of the party are mentioned. When leaving or disbanding, no one is mentioned.
+            |If there are no members in a party, it is automatically disbanded.
+            |&{Long term usage:}
+            |Parties are not persisted when the bot restarts. As such, you should not depend on this feature in the
+            |long term. If that is what you wish to do, consider using roles instead.
+            |&{Example usage:}
+            |- `$name lol`\n
+            |- `$name lol leave`\n
+            |- `$name lol disband`
+        """.trimMargin()
+
+        execute(TrWord, TrWord.optional()) { (rawName, action) ->
+            val name = rawName.toLowerCase()
+            val member = event.member!!
+
+            when (action) {
+                null -> {
+                    checkNull(PartyManager.joinOrCreate(name, member), "You are already in the `$name` party!")
+                        ?: return@execute
+
+                    val party = PartyManager.get(name)!!
+                    if (party.size == 1) {
+                        success("You have created the `$name` party!")
+                    } else {
+                        val members = party.dropLast(1).joinToString(" ") { it.asMention }
+                        success("`${event.member!!.effectiveName}` has joined the $name party!\n$members")
+                    }
+                }
+                "leave" -> {
+                    checkNull(PartyManager.leave(name, member), "You are not in the `$name` party!") ?: return@execute
+                    if (PartyManager.get(name) == null)
+                        success("You have left the `$name` party which has now been disbanded!")
+                    else
+                        success("You have left the `$name` party!")
+                }
+                "disband" -> {
+                    when (PartyManager.disband(name, member)) {
+                        true -> success("The `$name` party has been disbanded!")
+                        false -> failure("You must be in the `$name` party to disband it!")
+                        null -> failure("There is no party called `$name`!")
+                    }
+                }
+                else -> failure("That's not right. Type `${invokedPrefix}help ${this@command.name}` for information.")
+            }
         }
     }
 

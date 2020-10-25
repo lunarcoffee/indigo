@@ -19,4 +19,5 @@ object Emoji {
     const val MAG = "\uD83D\uDD0D"
     const val BOOK = "\uD83D\uDCD6"
     const val HAMMER_AND_WRENCH = "\uD83D\uDEE0️"
+    const val DIVIDER = "\uD83D\uDDC2️"
 }

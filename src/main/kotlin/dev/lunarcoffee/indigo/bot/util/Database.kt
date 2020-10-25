@@ -11,8 +11,10 @@ object Database {
     private val client = KMongo.createClient().coroutine
     private val db = client.getDatabase("Indigo-0")
 
-    val guildSettingsStore = db.getCollection<GuildSettings>("GuildSettingsStore")
-    val userSettingsStore = db.getCollection<UserSettings>("UserSettingsStore")
-    val reminderStore = db.getCollection<Reminder>("ReminderStore")
-    val starboardStore = db.getCollection<StarboardEntry>("StarboardEntryStore")
+    val guildSettingsStore = getCol<GuildSettings>("GuildSettings")
+    val userSettingsStore = getCol<UserSettings>("UserSettings")
+    val reminderStore = getCol<Reminder>("Reminder")
+    val starboardStore = getCol<StarboardEntry>("StarboardEntry")
+
+    private inline fun <reified T : Any> getCol(name: String) = db.getCollection<T>("${name}Store")
 }

@@ -28,7 +28,7 @@ dependencies {
     implementation("com.github.kittinunf.fuel:fuel:2.2.1")
     implementation("com.github.kittinunf.fuel:fuel-coroutines:2.2.1")
     implementation("org.apache.commons:commons-math3:3.6.1")
-    implementation("com.merakianalytics.orianna:orianna:4.0.0-rc5")
+    implementation("com.merakianalytics.orianna:orianna:4.0.0-rc7")
 }
 
 tasks {

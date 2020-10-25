@@ -15,29 +15,27 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 class StarboardListener : ListenerAdapter() {
     override fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = runBlocking {
         val starboard = StarboardManager.getStarboard(event.guild.id)
-        if (!starboard.enabled || !isStarEmoji(event.reactionEmote))
-            return@runBlocking
-
-        val message = event.getMessage()
-        if (event.userId == message.author.id) {
-            event.reaction.removeReaction(event.user).await()
-            return@runBlocking
+        if (starboard.enabled && isStarEmoji(event.reactionEmote)) {
+            val message = event.getMessage()
+            if (event.userId != message.author.id) {
+                val starCount = StarboardManager.countStars(message)
+                if (starCount >= starboard.threshold)
+                    StarboardManager.addOrUpdateEntry(event)
+            } else {
+                event.reaction.removeReaction(event.user).await()
+            }
         }
-
-        val starCount = StarboardManager.countStars(message)
-        if (starCount >= starboard.threshold)
-            StarboardManager.addOrUpdateEntry(event)
     }
 
     override fun onGuildMessageReactionRemove(event: GuildMessageReactionRemoveEvent) = runBlocking {
         val starboard = StarboardManager.getStarboard(event.guild.id)
-        if (!starboard.enabled || !isStarEmoji(event.reactionEmote))
-            return@runBlocking
-
-        val starCount = StarboardManager.countStars(event.getMessage())
-        if (starCount >= starboard.threshold)
-            return@runBlocking StarboardManager.addOrUpdateEntry(event)
-        StarboardManager.removeEntry(event)
+        if (starboard.enabled && isStarEmoji(event.reactionEmote)) {
+            val starCount = StarboardManager.countStars(event.getMessage())
+            return@runBlocking if (starCount >= starboard.threshold)
+                StarboardManager.addOrUpdateEntry(event)
+            else
+                StarboardManager.removeEntry(event)
+        }
     }
 
     override fun onGuildMessageReactionRemoveAll(event: GuildMessageReactionRemoveAllEvent) = runBlocking {

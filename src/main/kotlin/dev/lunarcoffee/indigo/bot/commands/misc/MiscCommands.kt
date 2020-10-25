@@ -90,4 +90,44 @@ class MiscCommands {
             success("You can invite me with <$url>!")
         }
     }
+
+    fun data() = command("data") {
+        description = """
+            |`$name`
+            |Details what data I collect.
+            |This command details all of the data and information that I collect from users.
+        """.trimMargin()
+
+        execute {
+            send(
+                embed {
+                    title = "${Emoji.DIVIDER}  Data collection:"
+                    description = """
+                        |I do not passively (without user interaction) collect data from any source accessible via
+                        |Discord outside of anything the [JDA library](https://github.com/DV8FromTheWorld/JDA) does. 
+                        |Besides that, there are a number of features which will persist user specific and potentially
+                        |sensitive data, all detailed below.
+                    """.trimMargin().replace('\n', ' ')
+
+                    field {
+                        name = "Commands:"
+                        value = """
+                            |`remindin`: Stores message data (content and author ID) for the specified duration
+                            |`remindat`: Stores message data (content and author ID) until the specified time
+                            |`reminders`: Does not collect data, but displays existing reminder data (if any)
+                        """.trimMargin()
+                    }
+
+                    field {
+                        name = "Starboard:"
+                        value = """
+                            |If the starboard feature is enabled using the `setstarboard` command, any messages which
+                            |have enough star reactions to be on the board will have their message IDs retained (the
+                            |content/author/etc. is not retained) until they no longer have enough reactions.
+                        """.trimMargin().replace('\n', ' ')
+                    }
+                }
+            )
+        }
+    }
 }

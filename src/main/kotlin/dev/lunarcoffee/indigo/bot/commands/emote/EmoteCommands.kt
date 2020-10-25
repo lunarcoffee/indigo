@@ -3,6 +3,7 @@ package dev.lunarcoffee.indigo.bot.commands.emote
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.coroutines.awaitByteArray
 import dev.lunarcoffee.indigo.bot.util.consts.Emoji
+import dev.lunarcoffee.indigo.bot.util.sanitize
 import dev.lunarcoffee.indigo.bot.util.success
 import dev.lunarcoffee.indigo.framework.api.dsl.command
 import dev.lunarcoffee.indigo.framework.api.dsl.paginator
@@ -35,7 +36,8 @@ class EmoteCommands {
         execute(TrRemaining) { (names) ->
             check(names, "I can only send up to 20 emotes!") { size > 20 } ?: return@execute
 
-            val authorName = event.guild.getMember(event.author)!!.effectiveName
+            var authorName = event.guild.getMember(event.author)!!.effectiveName.sanitize()
+            authorName = authorName.replace("\\@", "")
             val emotes = names
                 .asSequence()
                 .map { emoteNameIndexPair(it) }
